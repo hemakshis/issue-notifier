@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { Repository } from '../../utils/types'
+import { Repository, Label } from '../../utils/types'
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles"
 import { Link, Card, CardContent, Button, Typography, CircularProgress } from "@material-ui/core"
 import StarIcon from "@material-ui/icons/Star"
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline"
 import CallSplitIcon from "@material-ui/icons/CallSplit"
-import Labels, { Label } from "./Labels"
+import Labels from "./Labels"
 import { getOptions } from "../../utils/apiUtils"
 
 export type RepositoryCardProp = Repository

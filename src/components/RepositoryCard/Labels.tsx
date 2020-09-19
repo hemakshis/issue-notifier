@@ -1,18 +1,12 @@
 import React, { useState } from "react"
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles"
-import { Button, Paper, Chip } from "@material-ui/core"
-import NotificationsIcon from "@material-ui/icons/Notifications"
-import CancelIcon from '@material-ui/icons/Cancel'
+import { Button, Paper } from "@material-ui/core"
 import DeleteIcon from "@material-ui/icons/Delete"
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank'
 import CheckBoxIcon from '@material-ui/icons/CheckBox'
 import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck'
-
-export type Label = {
-	name: string;
-	color: string;
-	selected: boolean
-}
+import LabelChip from "./LabelChip"
+import { Label } from "../../utils/types"
 
 export type LabelsProp = {
 	labels: Label[];
@@ -66,27 +60,6 @@ const useStyles = makeStyles((theme: Theme) =>
 	})
 );
 
-const useLabelStyles = makeStyles((theme: Theme) => ({
-	notificationIcon: ({ color }: { color: string }) => ({
-		color: theme.palette.augmentColor({ main: "#" + color }).main,
-		"&:hover": {
-			color: theme.palette.augmentColor({ main: "#" + color }).dark
-		}
-	}),
-	chip: ({ color, selected }: { color: string; selected: boolean }) => ({
-		backgroundColor: selected
-			? "#" + color
-			: theme.palette.type === "dark"
-				? theme.palette.grey[900]
-				: "#fff",
-		margin: theme.spacing(0.5),
-		borderColor: theme.palette.augmentColor({ main: "#" + color }).main,
-		color: !selected
-			? theme.palette.type !== "dark" ? theme.palette.grey[900] : "#fff"
-			: theme.palette.getContrastText(theme.palette.augmentColor({ main: "#" + color })[theme.palette.type]),
-	}),
-}));
-
 const Labels: React.FC<LabelsProp> = ({
 	labels,
 	subscribe
@@ -139,7 +112,7 @@ const Labels: React.FC<LabelsProp> = ({
 					size="small"
 					onClick={handleSelectAllLabels}
 				>
-					Select All 
+					{isSelectAll ? "Unselect" : "Select"} All 
 				</Button>
 				{(!isSelectAll && selectedLabelsCount > 0) && (
 					<Button
@@ -179,32 +152,6 @@ const Labels: React.FC<LabelsProp> = ({
 	);
 };
 
-export const LabelChip: React.FC<Label & { onDelete: (data: Label) => void }> = ({
-	name,
-	color,
-	selected,
-	onDelete,
-}) => {
-	const labelStyle = useLabelStyles({ color, selected });
 
-	return (
-		<li key={name}>
-			<Chip
-				label={name}
-				className={labelStyle.chip}
-				variant={selected ? "default" : "outlined"}
-				onDelete={onDelete}
-				size={selected ? "small" : "medium"}
-				deleteIcon={
-					!selected ? (
-						<NotificationsIcon className={labelStyle.notificationIcon} />
-					) : (
-							<CancelIcon />
-						)
-				}
-			/>
-		</li>
-	);
-}
 
 export default Labels;

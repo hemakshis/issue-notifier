@@ -1,4 +1,8 @@
-import { Label } from "../components/RepositoryCard/Labels"
+export type Label = {
+	name: string;
+	color: string;
+	selected: boolean
+}
 
 export type Repository = {
 	fullName: string;

@@ -10,45 +10,45 @@ const HomePage: React.FC<any> = props => {
 	const [repositories, setRepositories] = useState<Repository[]>([]);
 
 	const fetchRepositories = (searchKey: string) => {
-    fetch(
-      `https://api.github.com/search/repositories?q=${searchKey}`,
-      getOptions()
-    )
-      .then((res) => res.json())
-      .then((res) => {
+		fetch(
+			`https://api.github.com/search/repositories?q=${searchKey}`,
+			getOptions()
+		)
+			.then((res) => res.json())
+			.then((res) => {
 				let r: Repository[] = res.items.map((i: any) => ({
-          fullName: i.full_name,
-          htmlUrl: i.html_url,
-          forks: i.forks,
-          openIssues: i.open_issues,
-          stargazersCount: i.stargazers_count,
-        }));
+					fullName: i.full_name,
+					htmlUrl: i.html_url,
+					forks: i.forks,
+					openIssues: i.open_issues,
+					stargazersCount: i.stargazers_count,
+				}));
 
-				setRepositories( [...r] )
+				setRepositories([...r])
 			})
-  };
+	};
 
-  const clearRepositories = () => {
-    setRepositories([]);
+	const clearRepositories = () => {
+		setRepositories([]);
 	}
-	
-	const renderRepositoryCards = () =>
-    repositories.map((r) => (
-      <RepositoryCard
-        key={r.fullName}
-        {...r}
-      />
-    ));
 
-  return (
-    <Container maxWidth="md" style={{marginTop: "48px"}}>
-      <SearchBar
-        fetchRepositories={(searchKey) => fetchRepositories(searchKey)}
+	const renderRepositoryCards = () =>
+		repositories.map((r) => (
+			<RepositoryCard
+				key={r.fullName}
+				{...r}
+			/>
+		));
+
+	return (
+		<Container maxWidth="md" style={{ marginTop: "48px" }}>
+			<SearchBar
+				fetchRepositories={(searchKey) => fetchRepositories(searchKey)}
 				clearRepositories={clearRepositories}
-      />
+			/>
 			{repositories.length > 0 && renderRepositoryCards()}
-    </Container>
-  );
+		</Container>
+	);
 }
 
 export default HomePage

@@ -88,6 +88,7 @@ export type NavigationBarProps = {
 	toggleDarkMode: () => void;
 	login: () => void;
 	logout: () => void;
+	settings: () => void;
 };
 
 const NavigationBar: React.FC<NavigationBarProps> = ({
@@ -97,6 +98,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 	toggleDarkMode,
 	login,
 	logout,
+	settings,
 }) => {
 	const classes = useStyles();
 	const [
@@ -132,7 +134,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 			}}
 		>
 			<MenuItem>
-				<IconButton color="inherit">
+				<IconButton color="inherit" onClick={settings}>
 					<SettingsIcon />
 				</IconButton>
 				<p>Settings</p>
@@ -161,10 +163,10 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 
 	const renderAuthenticatedMenuItems = (
 		<div className={classes.sectionDesktop}>
-			<IconButton color="inherit" style={{ marginRight: "-5px" }}>
+			<IconButton color="inherit" style={{ marginRight: "-5px" }} onClick={settings}>
 				<SettingsIcon />
 			</IconButton>
-			<IconButton color="inherit" style={{ marginLeft: "-5px" }}>
+			<IconButton color="inherit" style={{ marginLeft: "-5px" }} onClick={logout}>
 				<PowerSettingsNewIcon />
 			</IconButton>
 		</div>

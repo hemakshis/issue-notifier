@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './App.css'
 import { Switch, Route } from 'react-router-dom'
 import HomePage from './components/HomePage'
@@ -56,6 +56,23 @@ const App: React.FC<any> = props => {
 		},
 	});
 
+	useEffect(() => {
+		fetch("/api/v1/user/authenticated")
+			.then(res => res.json())
+			.then(({success, error, payload}) => {
+				if (success) {
+					setAuthenticated(true)
+					setUsername(payload.username)
+					localStorage.setItem("username", payload.username);
+				} else {
+					console.error(error)
+					setAuthenticated(false)
+					setUsername("")
+					localStorage.removeItem("username");
+				}
+			})
+	}, [])
+
 	const handleLogin = () => {
 		const githubOAuth = GitHubOAuth.startGitHubOAuth("GitHubOAuth");
 		githubOAuth
@@ -66,29 +83,33 @@ const App: React.FC<any> = props => {
 	};
 
 	const performGitHubLogin = (code: string) => {
-		fetch(`http://localhost:8001/api/login/github/oauth2?code=${code}`)
+		fetch(`/api/v1/login/github/oauth2?code=${code}`)
 			.then((res) => res.json())
-			.then(({ authorized, accessToken, username }) => {
-				if (authorized) {
-					setAuthenticated(authorized)
-					setUsername(username)
-					localStorage.setItem("accessToken", accessToken);
+			.then(({ success, error, payload }) => {
+				if (success) {
+					setAuthenticated(true)
+					setUsername(payload.username)
+					localStorage.setItem("username", payload.username);
 				}
 			})
 			.catch((err) => console.error(err));
 	};
 
 	const handleLogout = () => {
-		fetch("/logout")
+		fetch("/api/v1/user/logout")
 			.then((res) => res.json())
-			.then(({ success, authorized }) => {
+			.then(({ success, error}) => {
 				if (success) {
-					setAuthenticated(authorized)
+					setAuthenticated(false)
 					setUsername("")
-					localStorage.removeItem("accessToken");
+					localStorage.removeItem("username");
 				}
 			});
-	};
+	}
+
+	const handleSettings = () => {
+		console.log("Taking you to settings page")
+	}
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -101,6 +122,7 @@ const App: React.FC<any> = props => {
 					isAuthenticated={isAuthenticated}
 					login={handleLogin}
 					logout={handleLogout}
+					settings={handleSettings}
 				/>
 				<Switch>
 					<Route path="/" render={(props) => <HomePage {...props} />} />

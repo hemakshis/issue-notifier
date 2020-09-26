@@ -23,11 +23,13 @@ declare module "@material-ui/core/styles/createBreakpoints" {
 	}
 }
 
+export const AuthenticationContext = React.createContext({ isAuthenticated: false, username: ""});
+
 const App: React.FC<any> = props => {
 
 	const [darkMode, toggleDarkMode] = useState<boolean>(false)
 	const [isAuthenticated, setAuthenticated] = useState<boolean>(false)
-	const [username, setUsername] = useState<string>("")
+    const [username, setUsername] = useState<string>("")
 
 	const theme = createMuiTheme({
 		palette: {
@@ -59,18 +61,16 @@ const App: React.FC<any> = props => {
 	useEffect(() => {
 		fetch("/api/v1/user/authenticated")
 			.then(res => res.json())
-			.then(({success, error, payload}) => {
-				if (success) {
-					setAuthenticated(true)
-					setUsername(payload.username)
-					localStorage.setItem("username", payload.username);
-				} else {
-					console.error(error)
-					setAuthenticated(false)
-					setUsername("")
-					localStorage.removeItem("username");
-				}
-			})
+			.then(({username}) => {
+                setAuthenticated(true)
+                setUsername(username)
+                localStorage.setItem("username", username);
+            })
+            .catch(err => {
+                setAuthenticated(false)
+                setUsername("")
+                localStorage.removeItem("username");
+            })
 	}, [])
 
 	const handleLogin = () => {
@@ -85,25 +85,23 @@ const App: React.FC<any> = props => {
 	const performGitHubLogin = (code: string) => {
 		fetch(`/api/v1/login/github/oauth2?code=${code}`)
 			.then((res) => res.json())
-			.then(({ success, error, payload }) => {
-				if (success) {
-					setAuthenticated(true)
-					setUsername(payload.username)
-					localStorage.setItem("username", payload.username);
-				}
-			})
+			.then(({username}) => {
+                setAuthenticated(true)
+                setUsername(username)
+                localStorage.setItem("username", username);
+            })
 			.catch((err) => console.error(err));
 	};
 
 	const handleLogout = () => {
 		fetch("/api/v1/user/logout")
 			.then((res) => res.json())
-			.then(({ success, error}) => {
-				if (success) {
-					setAuthenticated(false)
-					setUsername("")
-					localStorage.removeItem("username");
-				}
+			.then(res => {
+                if (res === "Success") {
+                    setAuthenticated(false)
+                    setUsername("")
+                    localStorage.removeItem("username");
+                }
 			});
 	}
 
@@ -114,21 +112,23 @@ const App: React.FC<any> = props => {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-			<Paper square={true} elevation={0}>
-				<NavigationBar
-					darkMode={darkMode}
-					toggleDarkMode={() => toggleDarkMode((prev) => !prev)}
-					username={username}
-					isAuthenticated={isAuthenticated}
-					login={handleLogin}
-					logout={handleLogout}
-					settings={handleSettings}
-				/>
-				<Switch>
-					<Route path="/" render={(props) => <HomePage {...props} />} />
-					<Route path="/settings" render={(props) => <Settings {...props} />} />
-				</Switch>
-			</Paper>
+            <AuthenticationContext.Provider value={{isAuthenticated, username}}>
+                <Paper square={true} elevation={0}>
+                    <NavigationBar
+                        darkMode={darkMode}
+                        toggleDarkMode={() => toggleDarkMode((prev) => !prev)}
+                        username={username}
+                        isAuthenticated={isAuthenticated}
+                        login={handleLogin}
+                        logout={handleLogout}
+                        settings={handleSettings}
+                    />
+                    <Switch>
+                        <Route path="/" render={(props) => <HomePage {...props} />} />
+                        <Route path="/settings" render={(props) => <Settings {...props} />} />
+                    </Switch>
+                </Paper>
+            </AuthenticationContext.Provider>
 		</ThemeProvider>
 	);
 }

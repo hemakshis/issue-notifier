@@ -10,7 +10,7 @@ import { Label } from "../../utils/types"
 
 export type LabelsProp = {
 	labels: Label[];
-	subscribe: (labels: Label[]) => void
+	subscribe: (labels: string[]) => Promise<boolean>
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -65,24 +65,25 @@ const Labels: React.FC<LabelsProp> = ({
 	subscribe
 }) => {
 
-	const [labelsState, setLabelsState] = useState<Label[]>(labels);
-	const [selectedLabelsCount, setSelectedLabelsCount] = useState<number>(0);
-	
-	const isSelectAll = selectedLabelsCount === labels.length
+    const [selectableLabels, setSelectableLabels] = useState<Label[]>(labels);
+    const [selectedLabelsCount, setSelectedLabelsCount] = useState<number>(0);
+    const [subscribedLabelsCount, setSubscribedLabelsCount] = useState<number>(labels.filter(l => l.subscribed).length);
+    const isSelectAll = selectedLabelsCount === selectableLabels.length - subscribedLabelsCount
+    const isSubscribedToAll = subscribedLabelsCount === labels.length
 
-	const classes = useStyles({selected: isSelectAll})
+    const classes = useStyles({selected: isSelectAll})
 
 	const handleSelection = (data: Label) => () => {
-		const index: number = labelsState.findIndex((l: Label) => l.name === data.name)
-		let newLabelsState: Label[] = labelsState.filter((l: Label) => l.name !== data.name)
-		newLabelsState.splice(index, 0, { ...data, selected: !data.selected })
+		const index: number = selectableLabels.findIndex(l => l.name === data.name)
+		let newSelectableLabels = selectableLabels.filter(l => l.name !== data.name)
+		newSelectableLabels.splice(index, 0, { ...data, selected: !data.selected })
 		setSelectedLabelsCount(prev => prev + (data.selected ? -1 : 1))
-		setLabelsState(newLabelsState)
+		setSelectableLabels(newSelectableLabels)
 	};
 
 	const handleClearSelection = () => {
-		const newLabelsState: Label[] = labelsState.map((l: Label) => ({ ...l, selected: false }))
-		setLabelsState(newLabelsState)
+		const newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: false }))
+		setSelectableLabels(newSelectableLabels)
 		setSelectedLabelsCount(0)
 	}
 
@@ -91,21 +92,30 @@ const Labels: React.FC<LabelsProp> = ({
 		if (isSelectAll) {
 			handleClearSelection()
 		} else {
-			const newLabelsState: Label[] = labelsState.map((l: Label) => ({ ...l, selected: true }))
-			setLabelsState(newLabelsState)
-			setSelectedLabelsCount(newLabelsState.length)
+            const newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: !l.subscribed && true }))
+			setSelectableLabels(newSelectableLabels)
+			setSelectedLabelsCount(newSelectableLabels.length - subscribedLabelsCount)
 		}
-		console.log(isSelectAll)
 	}
 	
 	const subscribeToSelectedLabels = () => {
-		subscribe(labelsState.filter((l: Label) => l.selected));
+        const selectedLabels = selectableLabels.filter(l => l.selected).map(l => l.name);
+        subscribe(selectedLabels)
+            .then(res => {
+                if (res) {
+                    const newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: false, subscribed: l.subscribed || selectedLabels.includes(l.name) }))
+                    
+                    setSelectableLabels(newSelectableLabels)
+                    setSubscribedLabelsCount(prev => prev + selectedLabels.length)
+					setSelectedLabelsCount(0)
+                }
+            })
 	}
 
 	return (
 		<div>
 			<Paper component="div" className={classes.actionButtons} elevation={0}>
-				<Button
+				{!isSubscribedToAll && <Button
 					variant={isSelectAll ? "contained" : "outlined"}
 					className={classes.selectAllButton}
 					startIcon={isSelectAll ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon />}
@@ -113,7 +123,7 @@ const Labels: React.FC<LabelsProp> = ({
 					onClick={handleSelectAllLabels}
 				>
 					{isSelectAll ? "Unselect" : "Select"} All 
-				</Button>
+				</Button>}
 				{(!isSelectAll && selectedLabelsCount > 0) && (
 					<Button
 						className="clearButton"
@@ -126,12 +136,11 @@ const Labels: React.FC<LabelsProp> = ({
 				)}
 			</Paper>
 			<Paper component="ul" className={classes.root} elevation={0}>
-				{labelsState.map((data: Label) => (
+				{selectableLabels.map(l => (
 					<LabelChip
-						key={data.name}
-						{...data}
-						selected={data.selected}
-						onDelete={handleSelection(data)}
+						key={l.name}
+						{...l}
+						onDelete={handleSelection(l)}
 					/>
 				))}
 			</Paper>

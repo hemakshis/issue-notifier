@@ -1,7 +1,8 @@
 export type Label = {
 	name: string;
 	color: string;
-	selected: boolean
+    selected: boolean;
+    subscribed: boolean;
 }
 
 export type Repository = {

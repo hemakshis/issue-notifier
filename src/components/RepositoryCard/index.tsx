@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { Repository, Label } from '../../utils/types'
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles"
 import { Link, Card, CardContent, Button, Typography, CircularProgress } from "@material-ui/core"
@@ -7,6 +7,7 @@ import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline"
 import CallSplitIcon from "@material-ui/icons/CallSplit"
 import Labels from "./Labels"
 import { getOptions } from "../../utils/apiUtils"
+import { AuthenticationContext } from '../../App'
 
 export type RepositoryCardProp = Repository
 
@@ -101,6 +102,8 @@ const RepositoryCard: React.FC<RepositoryCardProp> = ({
 		labels: [],
 	});
 	
+	const { isAuthenticated, username } = useContext(AuthenticationContext)
+
 	const classes = useStyles({ viewLabels });
 
 	const toggleAndFetchLabels = async () => {
@@ -108,31 +111,64 @@ const RepositoryCard: React.FC<RepositoryCardProp> = ({
 			setLoading(true)
 			let pageNumber: number = 1
 			let allLabels: Label[] = []
-			let response: Label[] = [];
+			let response: Label[] = []
 			do {
 				response = []
 				await fetch(
 					`https://api.github.com/repos/${fullName}/labels?page=${pageNumber}`,
 					getOptions()
 				)
-					.then((res) => res.json())
-					.then((res) => {
-						response = res
-						allLabels = [...allLabels, ...response]
-					});
+						.then((res) => res.json())
+						.then((res) => {
+                            response = res.map((l: Label) => 
+                                ({ name: l.name, color: "#" + l.color, selected: false }))
+							allLabels = [...allLabels, ...response]
+						});
 
 				pageNumber++
-			} while (response.length !== 0);
+            } while (response.length !== 0);
+			
+			if (isAuthenticated) {
+				await fetch(`/api/v1/user/subscription/${fullName}/labels`)
+					.then(res => res.json())
+					.then((res) => {
+                        if (res !== null)
+						allLabels.forEach(l => 
+							l.subscribed = res.includes(l.name))
+					})
+			}
 
 			setData((prev) => ({ ...prev, labels: [...allLabels] }));
 			setLoading(false)
 		}
 
-		toggleViewLabels(!viewLabels);
+		toggleViewLabels(!viewLabels)
 	}
 
-	const handleSubscribe = (labels: Label[]) => {
-		console.log("You are subscribing to: " + labels.length + " labels")
+	const handleSubscribe = async (labels: string[]): Promise<boolean> => {
+        const reqBody = {
+            repoName: fullName,
+            apiUrl: `https://api.github.com/repos/${fullName}`,
+            htmlUrl: htmlUrl,
+            labels: labels
+        }
+
+        const success = await fetch("/api/v1/user/subscription/add", {
+            method: "POST",
+            body: JSON.stringify(reqBody),
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(res => {
+                if (res === "Success")
+                    return true
+                return false
+            })
+
+        return success
 	}
 
 	return (

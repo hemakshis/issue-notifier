@@ -18,8 +18,7 @@ const useLabelStyles = makeStyles((theme: Theme) => ({
 			color: theme.palette.augmentColor({ main: props.color }).dark
 		}
 	}),
-	chip: (props: any) => {
-		const { color, selected, subscribed, inSettingsPage } = props
+	chip: ({ color, styleCondition }: { color: string, styleCondition: boolean }) => {
 		const customChips = (condition: boolean) => ({
 			backgroundColor: condition
 				? color
@@ -33,20 +32,18 @@ const useLabelStyles = makeStyles((theme: Theme) => ({
 				: theme.palette.getContrastText(theme.palette.augmentColor({ main: color })[theme.palette.type]),
 		})
 
-		if (!inSettingsPage) {
-			return {
-				...customChips(selected || subscribed),
-				"&:focus, &.MuiChip-outlined:focus": customChips(selected || subscribed)
-			}
-		} else {
-			return {
-				...customChips(!selected),
-				"&:focus, &.MuiChip-outlined:focus": customChips(!selected)
-			}
+		return {
+			...customChips(styleCondition),
+			"&:focus, &.MuiChip-outlined:focus": customChips(styleCondition),
 		}
-
 	},
 }));
+
+export type LabelChipStyle = {
+	deleteIcon: React.ReactElement;
+	variant: 'default' | 'outlined';
+	size: 'small' | 'medium';
+} 
 
 const LabelChip: React.FC<LabelChipProps> = ({
 	name,
@@ -57,31 +54,41 @@ const LabelChip: React.FC<LabelChipProps> = ({
 	onDelete,
 }) => {
 
-	const labelStyle = useLabelStyles({ color, selected, subscribed, inSettingsPage })
-	
-	// TODO: Make this more cleaner
-	const getDeleteIcon = () => {
-		if (!inSettingsPage && !selected)
-			return	<NotificationsIcon className={labelStyle.notificationsIcon} />
-		if (inSettingsPage && !selected)
-			return <NotificationsOffIcon />
-		if (selected)
-			return <CancelIcon />
+	const styleCondition = inSettingsPage ? !selected : (selected || subscribed)
+	const labelStyle = useLabelStyles({ color, styleCondition })
+
+	const getChipStyle = (): LabelChipStyle => {
+		let deleteIcon
+		let variant: LabelChipStyle["variant"]
+		let size: LabelChipStyle["size"]
+		if (inSettingsPage) {
+			if (!selected) {
+				deleteIcon = <NotificationsOffIcon />
+				variant = "default"
+				size = "small"
+			}
+			else {
+				deleteIcon = <CancelIcon />
+				variant = "outlined"
+				size = "medium"
+			}
+		} else {
+			if (!selected) {
+				deleteIcon = <NotificationsIcon className={labelStyle.notificationsIcon} />
+				variant = "outlined"
+				size = "medium"
+			}
+			else {
+				deleteIcon = <CancelIcon />
+				variant = "default"
+				size = "small"
+			}
+		}
+
+		return { deleteIcon, variant, size }
 	}
 
-	const getVariant = () => {
-		if ((!inSettingsPage && !selected) || (inSettingsPage && selected))
-			return	"outlined"
-		if (inSettingsPage && !selected)
-			return "default"
-	}
-
-	const getSize = () => {
-		if ((!inSettingsPage && !selected) || (inSettingsPage && selected))
-			return	"medium"
-		if ((inSettingsPage && !selected) || (!inSettingsPage && selected))
-			return "small"
-	}
+	const { deleteIcon, variant, size } = getChipStyle()
 
 	return (
 		<li key={name}>
@@ -96,10 +103,10 @@ const LabelChip: React.FC<LabelChipProps> = ({
 				<Chip
 					label={name}
 					className={labelStyle.chip}
-					variant={getVariant()}
+					variant={variant}
 					onDelete={onDelete}
-					size={getSize()}
-					deleteIcon={getDeleteIcon()}
+					size={size}
+					deleteIcon={deleteIcon}
 				/>
             }
 		</li>

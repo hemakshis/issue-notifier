@@ -20,31 +20,28 @@ const useLabelStyles = makeStyles((theme: Theme) => ({
 	}),
 	chip: (props: any) => {
 		const { color, selected, subscribed, inSettingsPage } = props
+		const customChips = (condition: boolean) => ({
+			backgroundColor: condition
+				? color
+				: theme.palette.type === "dark"
+					? theme.palette.grey[900]
+					: "#fff",
+			margin: theme.spacing(0.5),
+			borderColor: theme.palette.augmentColor({ main: color }).main,
+			color: !condition
+				? theme.palette.type !== "dark" ? theme.palette.grey[900] : "#fff"
+				: theme.palette.getContrastText(theme.palette.augmentColor({ main: color })[theme.palette.type]),
+		})
+
 		if (!inSettingsPage) {
 			return {
-				backgroundColor: (selected || subscribed)
-					? color
-					: theme.palette.type === "dark"
-						? theme.palette.grey[900]
-						: "#fff",
-				margin: theme.spacing(0.5),
-				borderColor: theme.palette.augmentColor({ main: color }).main,
-				color: !(selected || subscribed)
-					? theme.palette.type !== "dark" ? theme.palette.grey[900] : "#fff"
-					: theme.palette.getContrastText(theme.palette.augmentColor({ main: color })[theme.palette.type]),
+				...customChips(selected || subscribed),
+				"&:focus, &.MuiChip-outlined:focus": customChips(selected || subscribed)
 			}
 		} else {
 			return {
-				backgroundColor: !selected
-					? color
-					: theme.palette.type === "dark"
-						? theme.palette.grey[900]
-						: "#fff",
-				margin: theme.spacing(0.5),
-				borderColor: theme.palette.augmentColor({ main: color }).main,
-				color: selected
-					? theme.palette.type !== "dark" ? theme.palette.grey[900] : "#fff"
-					: theme.palette.getContrastText(theme.palette.augmentColor({ main: color })[theme.palette.type]),
+				...customChips(!selected),
+				"&:focus, &.MuiChip-outlined:focus": customChips(!selected)
 			}
 		}
 
@@ -64,7 +61,6 @@ const LabelChip: React.FC<LabelChipProps> = ({
 	
 	// TODO: Make this more cleaner
 	const getDeleteIcon = () => {
-		// BUG: After clicking the subscribe button, background color of the chip is grey and changed to the actual color of label only after losing focus
 		if (!inSettingsPage && !selected)
 			return	<NotificationsIcon className={labelStyle.notificationsIcon} />
 		if (inSettingsPage && !selected)
@@ -74,12 +70,10 @@ const LabelChip: React.FC<LabelChipProps> = ({
 	}
 
 	const getVariant = () => {
-		if (!inSettingsPage && !selected)
+		if ((!inSettingsPage && !selected) || (inSettingsPage && selected))
 			return	"outlined"
 		if (inSettingsPage && !selected)
 			return "default"
-		if (inSettingsPage && selected)
-			return "outlined"
 	}
 
 	const getSize = () => {

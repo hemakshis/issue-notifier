@@ -72,8 +72,8 @@ const Labels: React.FC<LabelsProps> = ({
     const [selectableLabels, setSelectableLabels] = useState<Label[]>(labels)
     const [selectedLabelsCount, setSelectedLabelsCount] = useState<number>(0)
     const [subscribedLabelsCount, setSubscribedLabelsCount] = useState<number>(labels.filter(l => l.subscribed).length)
-    const isSelectAll = selectedLabelsCount === selectableLabels.length - (inSettingsPage ? 0 : subscribedLabelsCount)
-    const isSubscribedToAll = (inSettingsPage ? false : subscribedLabelsCount === labels.length)
+    const isSelectAll = selectedLabelsCount === selectableLabels.length - subscribedLabelsCount
+    const isSubscribedToAll = subscribedLabelsCount === labels.length
 
     const classes = useStyles({selected: isSelectAll})
 
@@ -128,6 +128,7 @@ const Labels: React.FC<LabelsProps> = ({
 					const newSelectableLabels = selectableLabels.filter(l => !selectedLabels.includes(`${l.name}_COLOR:${l.color}`) )
 					
 					setSelectableLabels(newSelectableLabels)
+					setSubscribedLabelsCount(prev => prev - selectedLabels.length)
 					setSelectedLabelsCount(0)
 				}
 			})

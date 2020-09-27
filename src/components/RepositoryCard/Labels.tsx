@@ -8,9 +8,11 @@ import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck'
 import LabelChip from "./LabelChip"
 import { Label } from "../../utils/types"
 
-export type LabelsProp = {
+export type LabelsProps = {
 	labels: Label[];
-	subscribe: (labels: string[]) => Promise<boolean>
+	inSettingsPage: boolean;
+	subscribe: (labels: string[]) => Promise<boolean>;
+	unsubscribe: (labels: string[], isSelectAll: boolean) => Promise<boolean>;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -60,16 +62,18 @@ const useStyles = makeStyles((theme: Theme) =>
 	})
 );
 
-const Labels: React.FC<LabelsProp> = ({
+const Labels: React.FC<LabelsProps> = ({
 	labels,
-	subscribe
+	inSettingsPage,
+	subscribe,
+	unsubscribe,
 }) => {
 
-    const [selectableLabels, setSelectableLabels] = useState<Label[]>(labels);
-    const [selectedLabelsCount, setSelectedLabelsCount] = useState<number>(0);
-    const [subscribedLabelsCount, setSubscribedLabelsCount] = useState<number>(labels.filter(l => l.subscribed).length);
-    const isSelectAll = selectedLabelsCount === selectableLabels.length - subscribedLabelsCount
-    const isSubscribedToAll = subscribedLabelsCount === labels.length
+    const [selectableLabels, setSelectableLabels] = useState<Label[]>(labels)
+    const [selectedLabelsCount, setSelectedLabelsCount] = useState<number>(0)
+    const [subscribedLabelsCount, setSubscribedLabelsCount] = useState<number>(labels.filter(l => l.subscribed).length)
+    const isSelectAll = selectedLabelsCount === selectableLabels.length - (inSettingsPage ? 0 : subscribedLabelsCount)
+    const isSubscribedToAll = (inSettingsPage ? false : subscribedLabelsCount === labels.length)
 
     const classes = useStyles({selected: isSelectAll})
 
@@ -79,7 +83,7 @@ const Labels: React.FC<LabelsProp> = ({
 		newSelectableLabels.splice(index, 0, { ...data, selected: !data.selected })
 		setSelectedLabelsCount(prev => prev + (data.selected ? -1 : 1))
 		setSelectableLabels(newSelectableLabels)
-	};
+	}
 
 	const handleClearSelection = () => {
 		const newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: false }))
@@ -99,17 +103,34 @@ const Labels: React.FC<LabelsProp> = ({
 	}
 	
 	const subscribeToSelectedLabels = () => {
-        const selectedLabels = selectableLabels.filter(l => l.selected).map(l => l.name);
+        const selectedLabels = selectableLabels.filter(l => l.selected).map(l => `${l.name}_COLOR:${l.color}`);
         subscribe(selectedLabels)
             .then(res => {
                 if (res) {
-                    const newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: false, subscribed: l.subscribed || selectedLabels.includes(l.name) }))
+					const newSelectableLabels = selectableLabels.map(l => ({ 
+						...l, 
+						selected: false, 
+						subscribed: l.subscribed || selectedLabels.includes(`${l.name}_COLOR:${l.color}`) 
+					}))
                     
                     setSelectableLabels(newSelectableLabels)
                     setSubscribedLabelsCount(prev => prev + selectedLabels.length)
 					setSelectedLabelsCount(0)
                 }
             })
+	}
+
+	const unsubscribeToSelectedLabels = () => {
+		const selectedLabels = selectableLabels.filter(l => l.selected).map(l => `${l.name}_COLOR:${l.color}`)
+		unsubscribe(selectedLabels, isSelectAll)
+			.then(res => {
+				if (res) {
+					const newSelectableLabels = selectableLabels.filter(l => !selectedLabels.includes(`${l.name}_COLOR:${l.color}`) )
+					
+					setSelectableLabels(newSelectableLabels)
+					setSelectedLabelsCount(0)
+				}
+			})
 	}
 
 	return (
@@ -140,6 +161,7 @@ const Labels: React.FC<LabelsProp> = ({
 					<LabelChip
 						key={l.name}
 						{...l}
+						inSettingsPage={inSettingsPage}
 						onDelete={handleSelection(l)}
 					/>
 				))}
@@ -151,9 +173,9 @@ const Labels: React.FC<LabelsProp> = ({
 						className={classes.subscribeButton}
 						startIcon={<PlaylistAddCheckIcon />}
 						size="small"
-						onClick={subscribeToSelectedLabels}
+						onClick={inSettingsPage ? unsubscribeToSelectedLabels : subscribeToSelectedLabels}
 					>
-						Subscribe to {selectedLabelsCount} Labels
+						{inSettingsPage ? "Unsubscribe" : "Subscribe"} to {selectedLabelsCount} Labels
 					</Button>
 				</Paper>
 			)}

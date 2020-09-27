@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState } from "react"
+import { Link } from "react-router-dom"
 import {
 	Switch,
 	Menu,
@@ -11,18 +12,18 @@ import {
 	FormGroup,
 	FormControlLabel,
 	Divider
-} from "@material-ui/core";
+} from "@material-ui/core"
 import {
 	makeStyles,
 	Theme,
 	createStyles,
-} from "@material-ui/core/styles";
-import MoreIcon from "@material-ui/icons/MoreVert";
-import GitHubIcon from "@material-ui/icons/GitHub";
-import SettingsIcon from "@material-ui/icons/Settings";
-import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
-import WbSunnyOutlinedIcon from "@material-ui/icons/WbSunnyOutlined";
-import Brightness2OutlinedIcon from '@material-ui/icons/Brightness2Outlined';
+} from "@material-ui/core/styles"
+import MoreIcon from "@material-ui/icons/MoreVert"
+import GitHubIcon from "@material-ui/icons/GitHub"
+import SettingsIcon from "@material-ui/icons/Settings"
+import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew"
+import WbSunnyOutlinedIcon from "@material-ui/icons/WbSunnyOutlined"
+import Brightness2OutlinedIcon from '@material-ui/icons/Brightness2Outlined'
 
 const useStyles = makeStyles((theme: Theme) => {
 	return createStyles({
@@ -78,8 +79,8 @@ const useStyles = makeStyles((theme: Theme) => {
 				display: "block",
 			},
 		},
-	});
-});
+	})
+})
 
 export type NavigationBarProps = {
 	isAuthenticated: boolean;
@@ -105,15 +106,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 		mobileMoreAnchorEl,
 		setMobileMoreAnchorEl,
 	] = useState<null | HTMLElement>(null);
-	const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+	const isMobileMenuOpen = Boolean(mobileMoreAnchorEl)
 
 	const handleMobileMenuClose = () => {
 		setMobileMoreAnchorEl(null);
-	};
-
+    }
+    
 	const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
 		setMobileMoreAnchorEl(event.currentTarget);
-	};
+    }
 
 	const mobileMenuId = "primary-search-account-menu-mobile";
 	const renderMobileMenu = (
@@ -176,9 +177,11 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 		<div className={classes.grow}>
 			<AppBar position="static" color="transparent">
 				<Toolbar>
-					<Typography variant="h6" noWrap>
-						GitHub Issue Notifier
-          </Typography>
+					<Link to="/" style={{ color: "inherit", textDecoration: "inherit" }}>
+						<Typography variant="h6" noWrap>
+							GitHub Issue Notifier
+          				</Typography>
+					</Link>
 					<div className={classes.grow} />
 					{isAuthenticated && username && (
 						<p className={classes.username}>Hello, {username}</p>

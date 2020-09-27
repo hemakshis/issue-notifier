@@ -6,10 +6,19 @@ import StarIcon from "@material-ui/icons/Star"
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline"
 import CallSplitIcon from "@material-ui/icons/CallSplit"
 import Labels from "./Labels"
-import { getOptions } from "../../utils/apiUtils"
+import { getOptions } from "../../utils/githubApis"
 import { AuthenticationContext } from '../../App'
 
-export type RepositoryCardProp = Repository
+export type RepositoryCardProps = {
+	fullName: string;
+	htmlUrl: string;
+	forks?: number;
+	openIssues?: number;
+	stargazersCount?: number;
+	labels?: Label[]
+	inSettingsPage: boolean;
+	removeRepository?: (repoName: string) => void;
+}
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
@@ -84,25 +93,28 @@ const useStyles = makeStyles((theme: Theme) =>
 	})
 );
 
-const RepositoryCard: React.FC<RepositoryCardProp> = ({
+const RepositoryCard: React.FC<RepositoryCardProps> = ({
 	fullName,
 	htmlUrl,
 	forks,
 	openIssues,
 	stargazersCount,
+	labels,
+	inSettingsPage,
+	removeRepository,
 }) => {
 	const [viewLabels, toggleViewLabels] = useState<boolean>(false);
 	const [loading, setLoading] = useState<boolean>(false)
-	const [data, setData] = useState<Repository>({
+	const [data, setData] = useState<any>({
 		fullName,
 		htmlUrl,
 		forks,
 		openIssues,
 		stargazersCount,
-		labels: [],
+		labels,
 	});
 	
-	const { isAuthenticated, username } = useContext(AuthenticationContext)
+	const { isAuthenticated } = useContext(AuthenticationContext)
 
 	const classes = useStyles({ viewLabels });
 
@@ -134,11 +146,11 @@ const RepositoryCard: React.FC<RepositoryCardProp> = ({
 					.then((res) => {
                         if (res !== null)
 						allLabels.forEach(l => 
-							l.subscribed = res.includes(l.name))
+							l.subscribed = res.includes(`${l.name}_COLOR:${l.color}`))
 					})
 			}
 
-			setData((prev) => ({ ...prev, labels: [...allLabels] }));
+			setData((prev: any) => ({ ...prev, labels: [...allLabels] }));
 			setLoading(false)
 		}
 
@@ -171,27 +183,54 @@ const RepositoryCard: React.FC<RepositoryCardProp> = ({
         return success
 	}
 
+	const handleUnsubscribe = async (labels: string[], isSelectAll: boolean): Promise<boolean> => {
+        const reqBody = {
+            repoName: fullName,
+            labels: labels
+        }
+
+        const success = await fetch("/api/v1/user/subscription/remove", {
+            method: "PUT",
+            body: JSON.stringify(reqBody),
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(res => {
+				if (res === "Success") {
+					if (isSelectAll && removeRepository !== undefined) 
+						removeRepository(fullName)
+                    return true
+				}
+                return false
+            })
+
+        return success
+	}
+
 	return (
 		<Card className={classes.root} elevation={9}>
 			<CardContent className={classes.cardContent}>
 				<div className={classes.summary}>
 					<div className="div1">
 						<Typography variant="h5" component="h2">
-							<Link href={data.htmlUrl} target="_blank" rel="noopener">
+							<Link href={data.htmlUrl} target="_blank" rel="noopener" style={{ color: "#03a9f4" }}>
 								{data.fullName}
 							</Link>
 						</Typography>
-						<Typography
+						{!inSettingsPage && <Typography
 							className={classes.repositorySummary}
 							color="textPrimary"
 						>
 							<CallSplitIcon /> {data.forks}
 							<ErrorOutlineIcon style={{marginLeft: "6px"}} /> {data.openIssues}
 							<StarIcon style={{marginLeft: "6px"}} /> {data.stargazersCount}
-						</Typography>
+						</Typography>}
 					</div>
 
-					<div className="div2">
+					{!inSettingsPage && <div className="div2">
 						<Button
 							size="small"
 							variant={viewLabels ? "outlined" : "contained"}
@@ -201,11 +240,16 @@ const RepositoryCard: React.FC<RepositoryCardProp> = ({
 						>
 							{viewLabels ? "Hide Labels" : "View Labels"}
 						</Button>
-					</div>
+					</div>}
 				</div>
 				{loading && <CircularProgress style={{ margin: "0 50%" }} />}
-				{viewLabels && data.labels && (
-					<Labels labels={data.labels} subscribe={handleSubscribe} />
+				{(inSettingsPage || viewLabels) && data.labels && (
+					<Labels 
+						labels={data.labels} 
+						subscribe={handleSubscribe} 
+						unsubscribe={handleUnsubscribe} 
+						inSettingsPage={inSettingsPage}
+					/>
 				)}
 			</CardContent>
 		</Card>

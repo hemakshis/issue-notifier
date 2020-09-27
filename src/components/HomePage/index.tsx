@@ -3,7 +3,7 @@ import SearchBar from "./SearchBar"
 import { Container } from "@material-ui/core"
 import RepositoryCard from "../RepositoryCard"
 import { Repository } from "../../utils/types"
-import { getOptions } from "../../utils/apiUtils"
+import { getOptions } from "../../utils/githubApis"
 
 const HomePage: React.FC<any> = props => {
 
@@ -37,6 +37,7 @@ const HomePage: React.FC<any> = props => {
 			<RepositoryCard
 				key={r.fullName}
 				{...r}
+				inSettingsPage={false}
 			/>
 		));
 

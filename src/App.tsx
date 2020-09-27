@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import './App.css'
-import { Switch, Route } from 'react-router-dom'
+import { Switch, Route, useHistory } from 'react-router-dom'
 import HomePage from './components/HomePage'
 import Settings from './components/UserProfile/Settings'
 import NavigationBar from './components/NavigationBar'
@@ -30,6 +30,8 @@ const App: React.FC<any> = props => {
 	const [darkMode, toggleDarkMode] = useState<boolean>(false)
 	const [isAuthenticated, setAuthenticated] = useState<boolean>(false)
     const [username, setUsername] = useState<string>("")
+
+    let history = useHistory()
 
 	const theme = createMuiTheme({
 		palette: {
@@ -106,7 +108,7 @@ const App: React.FC<any> = props => {
 	}
 
 	const handleSettings = () => {
-		console.log("Taking you to settings page")
+        history.push("/settings")
 	}
 
 	return (
@@ -124,8 +126,8 @@ const App: React.FC<any> = props => {
                         settings={handleSettings}
                     />
                     <Switch>
+                        <Route exact path="/settings" render={(props) => <Settings {...props} />} />
                         <Route path="/" render={(props) => <HomePage {...props} />} />
-                        <Route path="/settings" render={(props) => <Settings {...props} />} />
                     </Switch>
                 </Paper>
             </AuthenticationContext.Provider>

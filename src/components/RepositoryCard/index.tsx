@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Repository, Label } from '../../utils/types'
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles"
 import { Link, Card, CardContent, Button, Typography, CircularProgress } from "@material-ui/core"
@@ -113,11 +113,34 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 		stargazersCount,
 		labels,
 	});
-	const [isUpdate, setUpdate] = useState<boolean>(labels !== undefined ? labels.length > 0 : false);
-	
+	const [isUpdate, setUpdate] = useState<boolean>(labels !== undefined ? labels.length > 0 : false)
+	const [subscribedLabels, setSubscribedLabels] = useState<Label[]>([])
 	const { isAuthenticated } = useContext(AuthenticationContext)
 
 	const classes = useStyles({ viewLabels });
+
+	useEffect(() => {
+		if (isAuthenticated) {
+			fetch(`/api/v1/user/subscription/${fullName}/labels`)
+				.then(res => res.json())
+				.then((res) => {
+					if (res !== null) {
+						console.log("You just authenticated yourself!")
+						setUpdate(res.length > 0)
+						setSubscribedLabels(res)
+
+						const fetchedLabels: Label[] = data.labels
+						if (fetchedLabels != null && fetchedLabels.length > 0) {
+							fetchedLabels.forEach(l  => 
+								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
+							
+							setData((prev: any) => ({ ...prev, labels: [...fetchedLabels] }));
+						}
+					}
+				})
+				.catch(err => console.log(err))
+		}
+	}, [isAuthenticated])
 
 	const toggleAndFetchLabels = async () => {
 		if (!viewLabels && (data.labels === undefined || data.labels.length === 0)) {
@@ -141,16 +164,9 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 				pageNumber++
             } while (response.length !== 0);
 			
-			if (isAuthenticated) {
-				await fetch(`/api/v1/user/subscription/${fullName}/labels`)
-					.then(res => res.json())
-					.then((res) => {
-						if (res !== null) {
-							setUpdate(res.length > 0)
-							allLabels.forEach(l => 
-								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
-						}
-					})
+			if (isAuthenticated && subscribedLabels.length > 0) {
+				allLabels.forEach(l => 
+					l.subscribed = (subscribedLabels.filter((r: any) => r.name === l.name).length > 0))
 			}
 
 			setData((prev: any) => ({ ...prev, labels: [...allLabels] }));

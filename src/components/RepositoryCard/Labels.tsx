@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useContext } from "react"
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles"
 import { Button, Paper } from "@material-ui/core"
 import DeleteIcon from "@material-ui/icons/Delete"
@@ -7,6 +7,7 @@ import CheckBoxIcon from '@material-ui/icons/CheckBox'
 import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck'
 import LabelChip from "./LabelChip"
 import { Label } from "../../utils/types"
+import { AuthenticationContext } from "../../App"
 
 export type LabelsProps = {
 	labels: Label[];
@@ -75,7 +76,9 @@ const Labels: React.FC<LabelsProps> = ({
     const isSelectAll = selectedLabelsCount === selectableLabels.length - subscribedLabelsCount
     const isSubscribedToAll = subscribedLabelsCount === labels.length
 
-    const classes = useStyles({selected: isSelectAll})
+	const classes = useStyles({selected: isSelectAll})
+	
+	const { isAuthenticated } = useContext(AuthenticationContext)
 
 	const handleSelection = (data: Label) => () => {
 		const index: number = selectableLabels.findIndex(l => l.name === data.name)
@@ -138,7 +141,7 @@ const Labels: React.FC<LabelsProps> = ({
 
 	return (
 		<div>
-			<Paper component="div" className={classes.actionButtons} elevation={0}>
+			{isAuthenticated && <Paper component="div" className={classes.actionButtons} elevation={0}>
 				{!isSubscribedToAll && <Button
 					variant={isSelectAll ? "contained" : "outlined"}
 					className={classes.selectAllButton}
@@ -158,18 +161,18 @@ const Labels: React.FC<LabelsProps> = ({
 						Clear
 					</Button>
 				)}
-			</Paper>
+			</Paper>}
 			<Paper component="ul" className={classes.root} elevation={0}>
 				{selectableLabels.map(l => (
 					<LabelChip
 						key={l.name}
 						{...l}
 						inSettingsPage={inSettingsPage}
-						onDelete={handleSelection(l)}
+						onDelete={isAuthenticated ? handleSelection(l) : undefined}
 					/>
 				))}
 			</Paper>
-			{selectedLabelsCount > 0 && (
+			{isAuthenticated && selectedLabelsCount > 0 && (
 				<Paper component="div" className={classes.actionButtons} elevation={0}>
 					<Button
 						variant="contained"

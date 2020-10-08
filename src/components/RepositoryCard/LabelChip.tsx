@@ -8,7 +8,7 @@ import { Label } from "../../utils/types"
 
 export type LabelChipProps = Label & { 
 	inSettingsPage?: boolean; 
-	onDelete: (data: Label) => void; 
+	onDelete?: (data: Label) => void; 
 }
 
 const useLabelStyles = makeStyles((theme: Theme) => ({

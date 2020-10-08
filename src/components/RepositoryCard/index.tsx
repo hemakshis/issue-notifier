@@ -113,6 +113,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 		stargazersCount,
 		labels,
 	});
+	const [isUpdate, setUpdate] = useState<boolean>(labels !== undefined ? labels.length > 0 : false);
 	
 	const { isAuthenticated } = useContext(AuthenticationContext)
 
@@ -144,9 +145,11 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 				await fetch(`/api/v1/user/subscription/${fullName}/labels`)
 					.then(res => res.json())
 					.then((res) => {
-                        if (res !== null)
-						allLabels.forEach(l => 
-							l.subscribed = res.includes(`${l.name}_COLOR:${l.color}`))
+						if (res !== null) {
+							setUpdate(res.length > 0)
+							allLabels.forEach(l => 
+								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
+						}
 					})
 			}
 
@@ -157,16 +160,17 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 		toggleViewLabels(!viewLabels)
 	}
 
-	const handleSubscribe = async (labels: string[]): Promise<boolean> => {
+	const handleSubscribe = async (labels: Label[]): Promise<boolean> => {
         const reqBody = {
             repoName: fullName,
-            apiUrl: `https://api.github.com/repos/${fullName}`,
-            htmlUrl: htmlUrl,
-            labels: labels
-        }
-
-        const success = await fetch("/api/v1/user/subscription/add", {
-            method: "POST",
+            labels: labels.map(l => ({name: l.name, color: l.color}))
+		}
+		
+		const action = isUpdate ? "update" : "add"
+		const method = isUpdate ? "PUT" : "POST"
+		
+        const success = await fetch(`/api/v1/user/subscription/${action}`, {
+            method: method,
             body: JSON.stringify(reqBody),
             headers: {
                 'Content-Type': 'application/json',
@@ -175,7 +179,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
         })
             .then(res => res.json())
             .then(res => {
-                if (res === "Success")
+                if (res.includes("Success"))
                     return true
                 return false
             })
@@ -183,14 +187,14 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
         return success
 	}
 
-	const handleUnsubscribe = async (labels: string[], isSelectAll: boolean): Promise<boolean> => {
+	const handleUnsubscribe = async (labels: Label[], isSelectAll: boolean): Promise<boolean> => {
         const reqBody = {
             repoName: fullName,
-            labels: labels
+            labels: labels.map(l => ({name: l.name, color: l.color}))
         }
 
         const success = await fetch("/api/v1/user/subscription/remove", {
-            method: "PUT",
+            method: "DELETE",
             body: JSON.stringify(reqBody),
             headers: {
                 'Content-Type': 'application/json',
@@ -199,7 +203,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
         })
             .then(res => res.json())
             .then(res => {
-				if (res === "Success") {
+				if (res.includes("Success")) {
 					if (isSelectAll && removeRepository !== undefined) 
 						removeRepository(fullName)
                     return true

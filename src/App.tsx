@@ -108,7 +108,8 @@ const App: React.FC<any> = props => {
 	}
 
 	const handleSettings = () => {
-        history.push("/settings")
+		if (isAuthenticated)
+        	history.push("/settings")
 	}
 
 	return (
@@ -126,7 +127,7 @@ const App: React.FC<any> = props => {
                         settings={handleSettings}
                     />
                     <Switch>
-                        <Route exact path="/settings" render={(props) => <Settings {...props} />} />
+                        <Route path="/settings" render={(props) => <Settings {...props} />} />
                         <Route path="/" render={(props) => <HomePage {...props} />} />
                     </Switch>
                 </Paper>

@@ -11,8 +11,8 @@ import { Label } from "../../utils/types"
 export type LabelsProps = {
 	labels: Label[];
 	inSettingsPage: boolean;
-	subscribe: (labels: string[]) => Promise<boolean>;
-	unsubscribe: (labels: string[], isSelectAll: boolean) => Promise<boolean>;
+	subscribe: (labels: Label[]) => Promise<boolean>;
+	unsubscribe: (labels: Label[], isSelectAll: boolean) => Promise<boolean>;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -103,14 +103,15 @@ const Labels: React.FC<LabelsProps> = ({
 	}
 	
 	const subscribeToSelectedLabels = () => {
-        const selectedLabels = selectableLabels.filter(l => l.selected).map(l => `${l.name}_COLOR:${l.color}`);
+		const selectedLabels = selectableLabels.filter(l => l.selected)
+		const selectedLabelsName = selectedLabels.map(l => l.name)
         subscribe(selectedLabels)
             .then(res => {
                 if (res) {
 					const newSelectableLabels = selectableLabels.map(l => ({ 
 						...l, 
 						selected: false, 
-						subscribed: l.subscribed || selectedLabels.includes(`${l.name}_COLOR:${l.color}`) 
+						subscribed: l.subscribed || selectedLabelsName.includes(l.name) 
 					}))
                     
                     setSelectableLabels(newSelectableLabels)
@@ -121,11 +122,12 @@ const Labels: React.FC<LabelsProps> = ({
 	}
 
 	const unsubscribeToSelectedLabels = () => {
-		const selectedLabels = selectableLabels.filter(l => l.selected).map(l => `${l.name}_COLOR:${l.color}`)
+		const selectedLabels = selectableLabels.filter(l => l.selected)
+		const selectedLabelsName = selectedLabels.map(l => l.name)
 		unsubscribe(selectedLabels, isSelectAll)
 			.then(res => {
 				if (res) {
-					const newSelectableLabels = selectableLabels.filter(l => !selectedLabels.includes(`${l.name}_COLOR:${l.color}`) )
+					const newSelectableLabels = selectableLabels.filter(l => !selectedLabelsName.includes(l.name))
 					
 					setSelectableLabels(newSelectableLabels)
 					setSubscribedLabelsCount(prev => prev - selectedLabels.length)

@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react"
+import React, { useState, useEffect, useContext } from "react"
+import { Redirect } from 'react-router-dom'
 import RepositoryCard from "../RepositoryCard"
 import { Label } from "../../utils/types"
 import { Container, Typography } from "@material-ui/core"
+import { AuthenticationContext } from "../../App"
 
 export type SubscribedRepository = {
 	repoName: string;
@@ -12,18 +14,17 @@ export type SubscribedRepository = {
 const Settings: React.FC<any> = (props) => {
 
 	const [subscribedRepositories, setSubscribedRepositories] = useState<SubscribedRepository[]>([])
+	const { isAuthenticated } = useContext(AuthenticationContext)
 
 	useEffect(() => {
-
 		fetch("/api/v1/user/subscription/view")
 			.then(res => res.json())
 			.then(res => {
 				const repositories = res.map((r: any) => ({
 					...r,
-					labels : r.labels.map((l: string) => {
-						const [name, color] = l.split("_COLOR:")
+					labels : r.labels.map((l: Label) => {
 						return {
-							name, color,
+							...l,
 							subscribed: false,
 							selected: false
 						}
@@ -31,8 +32,7 @@ const Settings: React.FC<any> = (props) => {
 				}))
 
 				setSubscribedRepositories(repositories)
-			})		
-
+			})
 	}, [])
 
 	const renderRepositoryCards = () =>
@@ -50,6 +50,9 @@ const Settings: React.FC<any> = (props) => {
 		const newSubscribedRepositories = subscribedRepositories.filter(r => r.repoName !== repoName)
 		setSubscribedRepositories(newSubscribedRepositories)
 	}
+
+	if (!isAuthenticated)
+		return <Redirect to="/" />
 
 	return (
 		<Container maxWidth="md" style={{ marginTop: "48px" }}>

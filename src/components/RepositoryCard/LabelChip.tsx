@@ -19,22 +19,22 @@ const useLabelStyles = makeStyles((theme: Theme) => ({
 		}
 	}),
 	chip: ({ color, styleCondition }: { color: string, styleCondition: boolean }) => {
-		const customChips = (condition: boolean) => ({
-			backgroundColor: condition
+		const customChips = {
+			backgroundColor: styleCondition
 				? color
 				: theme.palette.type === "dark"
 					? theme.palette.grey[900]
 					: "#fff",
 			margin: theme.spacing(0.5),
 			borderColor: theme.palette.augmentColor({ main: color }).main,
-			color: !condition
+			color: !styleCondition
 				? theme.palette.type !== "dark" ? theme.palette.grey[900] : "#fff"
 				: theme.palette.getContrastText(theme.palette.augmentColor({ main: color })[theme.palette.type]),
-		})
+		}
 
 		return {
-			...customChips(styleCondition),
-			"&:focus, &.MuiChip-outlined:focus": customChips(styleCondition),
+			...customChips,
+			"&:focus, &.MuiChip-outlined:focus": customChips,
 		}
 	},
 }));

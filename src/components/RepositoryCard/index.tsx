@@ -119,13 +119,13 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 
 	const classes = useStyles({ viewLabels });
 
+	// FIXME: React complains when we try to delete a repository card in settings page when no labels are left
 	useEffect(() => {
-		if (isAuthenticated) {
+		if (isAuthenticated && !inSettingsPage) {
 			fetch(`/api/v1/user/subscription/${fullName}/labels`)
 				.then(res => res.json())
 				.then((res) => {
 					if (res !== null) {
-						console.log("You just authenticated yourself!")
 						setUpdate(res.length > 0)
 						setSubscribedLabels(res)
 
@@ -195,8 +195,10 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
         })
             .then(res => res.json())
             .then(res => {
-                if (res.includes("Success"))
+                if (res.includes("Success")) {
+					setUpdate(true)
                     return true
+				}
                 return false
             })
 

@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import './App.css'
 import { Switch, Route, useHistory } from 'react-router-dom'
-import HomePage from './components/HomePage'
-import Settings from './components/UserProfile/Settings'
-import NavigationBar from './components/NavigationBar'
-import GitHubOAuth from './components/NavigationBar/GitHubOAuth'
 import {
 	ThemeProvider,
 	createMuiTheme,
 } from "@material-ui/core/styles";
-import { Paper, CssBaseline } from "@material-ui/core";
+import { Paper, CssBaseline } from "@material-ui/core"
+
+import HomePage from './components/HomePage'
+import Settings from './components/UserProfile/Settings'
+import NavigationBar from './components/NavigationBar'
+import GitHubOAuth from './components/NavigationBar/GitHubOAuth'
+import { ACCESS_TOKEN } from "./utils/constants"
 
 declare module "@material-ui/core/styles/createBreakpoints" {
 	interface BreakpointOverrides {
@@ -23,7 +25,9 @@ declare module "@material-ui/core/styles/createBreakpoints" {
 	}
 }
 
-export const AuthenticationContext = React.createContext({ isAuthenticated: false, username: ""});
+export const AuthenticationContext = React.createContext({ isAuthenticated: false, username: "" })
+
+// TODO: 1. give alerts for user actions, 2. store theme preference somewhere for a user 3. auto logout or alert user when session expires
 
 const App: React.FC<any> = props => {
 
@@ -63,15 +67,15 @@ const App: React.FC<any> = props => {
 	useEffect(() => {
 		fetch("/api/v1/user/authenticated")
 			.then(res => res.json())
-			.then(({username}) => {
+			.then(({ username, accessToken }) => {
                 setAuthenticated(true)
-                setUsername(username)
-                localStorage.setItem("username", username);
+				setUsername(username)
+				localStorage.setItem(ACCESS_TOKEN, accessToken)
             })
             .catch(err => {
                 setAuthenticated(false)
-                setUsername("")
-                localStorage.removeItem("username");
+				setUsername("")
+				localStorage.removeItem(ACCESS_TOKEN)
             })
 	}, [])
 
@@ -87,10 +91,10 @@ const App: React.FC<any> = props => {
 	const performGitHubLogin = (code: string) => {
 		fetch(`/api/v1/login/github/oauth2?code=${code}`)
 			.then((res) => res.json())
-			.then(({username}) => {
+			.then(({ username, accessToken }) => {
                 setAuthenticated(true)
-                setUsername(username)
-                localStorage.setItem("username", username);
+				setUsername(username)
+				localStorage.setItem(ACCESS_TOKEN, accessToken)
             })
 			.catch((err) => console.error(err));
 	};
@@ -101,8 +105,8 @@ const App: React.FC<any> = props => {
 			.then(res => {
                 if (res === "Success") {
                     setAuthenticated(false)
-                    setUsername("")
-                    localStorage.removeItem("username");
+					setUsername("")
+					localStorage.removeItem(ACCESS_TOKEN)
                 }
 			});
 	}

@@ -20,18 +20,20 @@ const Settings: React.FC<any> = (props) => {
 		fetch("/api/v1/user/subscription/view")
 			.then(res => res.json())
 			.then(res => {
-				const repositories = res.map((r: any) => ({
-					...r,
-					labels : r.labels.map((l: Label) => {
-						return {
-							...l,
-							subscribed: false,
-							selected: false
-						}
-					})
-				}))
-
-				setSubscribedRepositories(repositories)
+				if (res !== null) {
+					const repositories = res.map((r: any) => ({
+						...r,
+						labels : r.labels.map((l: Label) => {
+							return {
+								...l,
+								subscribed: false,
+								selected: false
+							}
+						})
+					}))
+	
+					setSubscribedRepositories(repositories)
+				}
 			})
 	}, [])
 

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react'
-import { Repository, Label } from '../../utils/types'
+import React, { useState, useContext } from 'react'
+import { Label } from '../../utils/types'
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles"
 import { Link, Card, CardContent, Button, Typography, CircularProgress } from "@material-ui/core"
 import StarIcon from "@material-ui/icons/Star"
@@ -114,44 +114,22 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 		labels,
 	});
 	const [isUpdate, setUpdate] = useState<boolean>(labels !== undefined ? labels.length > 0 : false)
-	const [subscribedLabels, setSubscribedLabels] = useState<Label[]>([])
 	const { isAuthenticated } = useContext(AuthenticationContext)
 
 	const classes = useStyles({ viewLabels });
 
-	// FIXME: React complains when we try to delete a repository card in settings page when no labels are left
-	useEffect(() => {
-		if (isAuthenticated && !inSettingsPage) {
-			fetch(`/api/v1/user/subscription/${fullName}/labels`)
-				.then(res => res.json())
-				.then((res) => {
-					if (res !== null) {
-						setUpdate(res.length > 0)
-						setSubscribedLabels(res)
-
-						const fetchedLabels: Label[] = data.labels
-						if (fetchedLabels != null && fetchedLabels.length > 0) {
-							fetchedLabels.forEach(l  => 
-								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
-							
-							setData((prev: any) => ({ ...prev, labels: [...fetchedLabels] }));
-						}
-					}
-				})
-				.catch(err => console.log(err))
-		}
-	}, [isAuthenticated])
-
 	const toggleAndFetchLabels = async () => {
 		if (!viewLabels && (data.labels === undefined || data.labels.length === 0)) {
 			setLoading(true)
+
+			// Fetch labels from GitHub
 			let pageNumber: number = 1
 			let allLabels: Label[] = []
 			let response: Label[] = []
 			do {
 				response = []
 				await fetch(
-					`https://api.github.com/repos/${fullName}/labels?page=${pageNumber}`,
+					`https://api.github.com/repos/${fullName}/labels?per_page=100&page=${pageNumber}`,
 					getOptions()
 				)
 						.then((res) => res.json())
@@ -164,9 +142,19 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 				pageNumber++
             } while (response.length !== 0);
 			
-			if (isAuthenticated && subscribedLabels.length > 0) {
-				allLabels.forEach(l => 
-					l.subscribed = (subscribedLabels.filter((r: any) => r.name === l.name).length > 0))
+			// Also fetch labels to which user has already subscribed 
+			if (isAuthenticated) {
+				await fetch(`/api/v1/user/subscription/${fullName}/labels`)
+					.then(res => res.json())
+					.then((res) => {
+						if (res !== null) {
+							setUpdate(res.length > 0)
+							
+							allLabels.forEach(l  => 
+								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
+						}
+					})
+					.catch(err => console.log(err))
 			}
 
 			setData((prev: any) => ({ ...prev, labels: [...allLabels] }));

@@ -99,7 +99,11 @@ const Labels: React.FC<LabelsProps> = ({
 		if (isSelectAll) {
 			handleClearSelection()
 		} else {
-            const newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: !l.subscribed && true }))
+			let newSelectableLabels: Label[]
+			if (inSettingsPage)
+				newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: true }))
+			else 
+				newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: !l.subscribed }))
 			setSelectableLabels(newSelectableLabels)
 			setSelectedLabelsCount(newSelectableLabels.length - subscribedLabelsCount)
 		}

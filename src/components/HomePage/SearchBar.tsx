@@ -25,34 +25,34 @@ const useStyles = makeStyles((theme: Theme) =>
 			margin: 4,
 		},
 	})
-);
+)
 
 export type SearchBarProps = {
-	fetchRepositories: (searchKey: string) => any;
+	fetchRepositories: (searchKey: string) => void;
 	clearRepositories: () => void;
-};
+}
 
 const SearchBar: React.FC<SearchBarProps> = ({
 	fetchRepositories,
 	clearRepositories,
 }) => {
-	const [searchKey, setSearchKey] = useState<string>("");
+	const [searchKey, setSearchKey] = useState<string>("")
 
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setSearchKey(e.target.value);
-	};
+		setSearchKey(e.target.value)
+	}
 
 	const onSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		fetchRepositories(searchKey);
-	};
+		e.preventDefault()
+		fetchRepositories(searchKey)
+	}
 
 	const onClear = () => {
 		setSearchKey("")
 		clearRepositories()
 	}
 
-	const classes = useStyles();
+	const classes = useStyles()
 
 	return (
 		<Paper component="form" className={classes.root} elevation={9}>
@@ -85,7 +85,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 				<ClearIcon />
 			</IconButton>
 		</Paper>
-	);
-};
+	)
+}
 
-export default SearchBar;
+export default SearchBar

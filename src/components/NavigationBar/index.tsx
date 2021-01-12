@@ -8,6 +8,7 @@ import {
 	AppBar,
 	Toolbar,
 	Typography,
+	Tooltip,
 	Button,
 	FormGroup,
 	FormControlLabel,
@@ -24,6 +25,7 @@ import SettingsIcon from "@material-ui/icons/Settings"
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew"
 import WbSunnyOutlinedIcon from "@material-ui/icons/WbSunnyOutlined"
 import Brightness2OutlinedIcon from '@material-ui/icons/Brightness2Outlined'
+import SubscriptionsIcon from '@material-ui/icons/Subscriptions'
 
 const useStyles = makeStyles((theme: Theme) => {
 	return createStyles({
@@ -90,7 +92,7 @@ export type NavigationBarProps = {
 	login: () => void;
 	logout: () => void;
 	settings: () => void;
-};
+}
 
 const NavigationBar: React.FC<NavigationBarProps> = ({
 	isAuthenticated,
@@ -101,22 +103,22 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 	logout,
 	settings,
 }) => {
-	const classes = useStyles();
+	const classes = useStyles()
 	const [
 		mobileMoreAnchorEl,
 		setMobileMoreAnchorEl,
-	] = useState<null | HTMLElement>(null);
+	] = useState<null | HTMLElement>(null)
 	const isMobileMenuOpen = Boolean(mobileMoreAnchorEl)
 
 	const handleMobileMenuClose = () => {
 		setMobileMoreAnchorEl(null);
-    }
-    
+	}
+	
 	const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-		setMobileMoreAnchorEl(event.currentTarget);
-    }
+		setMobileMoreAnchorEl(event.currentTarget)
+	}
 
-	const mobileMenuId = "primary-search-account-menu-mobile";
+	const mobileMenuId = "primary-search-account-menu-mobile"
 	const renderMobileMenu = (
 		<Menu
 			anchorEl={mobileMoreAnchorEl}
@@ -147,9 +149,9 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 				<p>Logout</p>
 			</MenuItem>
 		</Menu>
-	);
+	)
 
-	const renderNoAuthMenuItems = (
+	const renderNoAuthMenuItems = () => (
 		<div className={classes.sectionDesktop}>
 			<Button
 				variant="contained"
@@ -158,20 +160,22 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 				onClick={login}
 			>
 				Login with GitHub
-      </Button>
+			</Button>
 		</div>
-	);
+	)
 
-	const renderAuthenticatedMenuItems = (
+	const renderAuthMenuItems = () => (
 		<div className={classes.sectionDesktop}>
-			<IconButton color="inherit" style={{ marginRight: "-5px" }} onClick={settings}>
-				<SettingsIcon />
-			</IconButton>
+			<Tooltip title="Subscriptions">
+				<IconButton color="inherit" style={{ marginRight: "-5px" }} onClick={settings}>
+					<SubscriptionsIcon />
+				</IconButton>
+			</Tooltip>
 			<IconButton color="inherit" style={{ marginLeft: "-5px" }} onClick={logout}>
 				<PowerSettingsNewIcon />
 			</IconButton>
 		</div>
-	);
+	)
 
 	return (
 		<div className={classes.grow}>
@@ -180,7 +184,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 					<Link to="/" style={{ color: "inherit", textDecoration: "inherit" }}>
 						<Typography variant="h6" noWrap>
 							GitHub Issue Notifier
-          				</Typography>
+						</Typography>
 					</Link>
 					<div className={classes.grow} />
 					{isAuthenticated && username && (
@@ -190,8 +194,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 						<Divider className={classes.divider} orientation="vertical" />
 					)}
 					{!isAuthenticated
-						? renderNoAuthMenuItems
-						: renderAuthenticatedMenuItems}
+						? renderNoAuthMenuItems()
+						: renderAuthMenuItems()}
 					<FormGroup className={classes.themeSwitch}>
 						<FormControlLabel
 							control={
@@ -225,7 +229,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 			</AppBar>
 			{isAuthenticated && renderMobileMenu}
 		</div>
-	);
-};
+	)
+}
 
-export default NavigationBar;
+export default NavigationBar

@@ -6,7 +6,7 @@ import StarIcon from "@material-ui/icons/Star"
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline"
 import CallSplitIcon from "@material-ui/icons/CallSplit"
 import Labels from "./Labels"
-import { getOptions } from "../../utils/githubApis"
+import { fetchLabelsFromGithub } from "../../utils/githubApis"
 import { AuthenticationContext } from '../../App'
 
 export type RepositoryCardProps = {
@@ -91,7 +91,7 @@ const useStyles = makeStyles((theme: Theme) =>
 			},
 		},
 	})
-);
+)
 
 const RepositoryCard: React.FC<RepositoryCardProps> = ({
 	fullName,
@@ -103,7 +103,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 	inSettingsPage,
 	removeRepository,
 }) => {
-	const [viewLabels, toggleViewLabels] = useState<boolean>(false);
+	const [viewLabels, toggleViewLabels] = useState<boolean>(false)
 	const [loading, setLoading] = useState<boolean>(false)
 	const [data, setData] = useState<any>({
 		fullName,
@@ -112,30 +112,24 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 		openIssues,
 		stargazersCount,
 		labels,
-	});
+	})
 	const [isUpdate, setUpdate] = useState<boolean>(labels !== undefined ? labels.length > 0 : false)
 	const { isAuthenticated } = useContext(AuthenticationContext)
 
-	const classes = useStyles({ viewLabels });
+	const classes = useStyles({ viewLabels })
 
 	useEffect(() => {
 		if (viewLabels && isAuthenticated) {
-			fetch(`/api/v1/user/subscription/${fullName}/labels`)
-				.then(res => res.json())
+			fetchSubscribedLabels(fullName)
 				.then((res) => {
-					if (res !== null) {
-						setUpdate(res.length > 0)
-
-						const fetchedLabels: Label[] = data.labels
-						if (fetchedLabels != null && fetchedLabels.length > 0) {
-							fetchedLabels.forEach(l  => 
-								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
-							
-							setData((prev: any) => ({ ...prev, labels: [...fetchedLabels] }));
-						}
-					}
+					const fetchedLabelsFromGithub: Label[] = data.labels
+					if (fetchedLabelsFromGithub != null && fetchedLabelsFromGithub.length > 0) {
+						fetchedLabelsFromGithub.forEach(l  => 
+							l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
+						
+						setData((prev: any) => ({ ...prev, labels: [...fetchedLabelsFromGithub] }))
+					}	
 				})
-				.catch(err => console.log(err))
 		}
 	}, [isAuthenticated])
 
@@ -143,42 +137,32 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 		if (!viewLabels && (data.labels === undefined || data.labels.length === 0)) {
 			setLoading(true)
 
-			// Fetch labels from GitHub
+			// Fetch labels from Gitub
 			let pageNumber: number = 1
 			let allLabels: Label[] = []
 			let response: Label[] = []
 			do {
 				response = []
-				await fetch(
-					`https://api.github.com/repos/${fullName}/labels?per_page=100&page=${pageNumber}`,
-					getOptions()
-				)
-						.then((res) => res.json())
+				await fetchLabelsFromGithub(fullName, pageNumber)
 						.then((res) => {
-                            response = res.map((l: Label) => 
-                                ({ name: l.name, color: "#" + l.color, selected: false }))
-							allLabels = [...allLabels, ...response]
-						});
+							response = res.map((l: Label) => 
+								({ name: l.name, color: "#" + l.color, selected: false }))
+							allLabels = allLabels.concat(response)
+						})
 
 				pageNumber++
-            } while (response.length !== 0);
+			} while (response.length !== 0)
 			
 			// Also fetch labels to which user has already subscribed 
 			if (isAuthenticated) {
-				await fetch(`/api/v1/user/subscription/${fullName}/labels`)
-					.then(res => res.json())
+				await fetchSubscribedLabels(fullName)
 					.then((res) => {
-						if (res !== null) {
-							setUpdate(res.length > 0)
-							
-							allLabels.forEach(l  => 
-								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
-						}
+						allLabels.forEach(l  => 
+							l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
 					})
-					.catch(err => console.log(err))
 			}
 
-			setData((prev: any) => ({ ...prev, labels: [...allLabels] }));
+			setData((prev: any) => ({ ...prev, labels: [...allLabels] }))
 			setLoading(false)
 		}
 
@@ -186,59 +170,71 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 	}
 
 	const handleSubscribe = async (labels: Label[]): Promise<boolean> => {
-        const reqBody = {
-            repoName: fullName,
-            labels: labels.map(l => ({name: l.name, color: l.color}))
+		const reqBody = {
+			repoName: fullName,
+			labels: labels.map(l => ({name: l.name, color: l.color}))
 		}
 		
 		const action = isUpdate ? "update" : "add"
 		const method = isUpdate ? "PUT" : "POST"
 		
-        const success = await fetch(`/api/v1/user/subscription/${action}`, {
-            method: method,
-            body: JSON.stringify(reqBody),
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-            .then(res => res.json())
-            .then(res => {
-                if (res.includes("Success")) {
+		const success = await fetch(`/api/v1/user/subscription/${action}`, {
+			method: method,
+			body: JSON.stringify(reqBody),
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			}
+		})
+			.then(res => {
+				if (res.status === 201 || res.status === 204) {
 					setUpdate(true)
-                    return true
+					return true
 				}
-                return false
-            })
+				return false
+			})
 
-        return success
+		return success
 	}
 
 	const handleUnsubscribe = async (labels: Label[], isSelectAll: boolean): Promise<boolean> => {
-        const reqBody = {
-            repoName: fullName,
-            labels: labels.map(l => ({name: l.name, color: l.color}))
-        }
+		const reqBody = {
+			repoName: fullName,
+			labels: labels.map(l => ({name: l.name, color: l.color}))
+		}
 
-        const success = await fetch("/api/v1/user/subscription/remove", {
-            method: "DELETE",
-            body: JSON.stringify(reqBody),
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-            .then(res => res.json())
-            .then(res => {
-				if (res.includes("Success")) {
+		const success = await fetch("/api/v1/user/subscription/remove", {
+			method: "DELETE",
+			body: JSON.stringify(reqBody),
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			}
+		})
+			.then(res => {
+				if (res.status === 204) {
 					if (isSelectAll && removeRepository !== undefined) 
 						removeRepository(fullName)
-                    return true
+					return true
 				}
-                return false
-            })
+				return false
+			})
 
-        return success
+		return success
+	}
+
+	const fetchSubscribedLabels = (fullName: string): Promise<any> => {
+		return fetch(`/api/v1/user/subscription/${fullName}/labels`)
+				.then(res => res.json())
+				.then((res) => {
+					if (res !== null) {
+						setUpdate(res.length > 0)
+
+						return res
+					}
+					return []
+				})
+				.catch(err => console.error(err))
 	}
 
 	return (
@@ -284,7 +280,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 				)}
 			</CardContent>
 		</Card>
-	);
+	)
 }
 
 export default RepositoryCard

@@ -1,8 +1,8 @@
 export type Label = {
 	name: string;
 	color: string;
-    selected: boolean;
-    subscribed: boolean;
+	selected: boolean;
+	subscribed: boolean;
 }
 
 export type Repository = {
@@ -12,4 +12,4 @@ export type Repository = {
 	openIssues: number;
 	stargazersCount: number;
 	labels: Label[]
-};
+}

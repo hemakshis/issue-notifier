@@ -37,7 +37,7 @@ const useLabelStyles = makeStyles((theme: Theme) => ({
 			"&:focus, &.MuiChip-outlined:focus": customChips,
 		}
 	},
-}));
+}))
 
 export type LabelChipStyle = {
 	deleteIcon: React.ReactElement;
@@ -48,7 +48,7 @@ export type LabelChipStyle = {
 const LabelChip: React.FC<LabelChipProps> = ({
 	name,
 	color,
-    selected,
+	selected,
 	subscribed,
 	inSettingsPage,
 	onDelete,
@@ -92,9 +92,9 @@ const LabelChip: React.FC<LabelChipProps> = ({
 
 	return (
 		<li key={name}>
-            {
-                !inSettingsPage && subscribed ?
-                <Chip
+			{
+				!inSettingsPage && subscribed ?
+				<Chip
 					label={name}
 					className={labelStyle.chip}
 					variant="default"
@@ -108,9 +108,9 @@ const LabelChip: React.FC<LabelChipProps> = ({
 					size={size}
 					deleteIcon={deleteIcon}
 				/>
-            }
+			}
 		</li>
-	);
+	)
 }
 
 export default LabelChip

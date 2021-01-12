@@ -46,7 +46,7 @@ const Settings: React.FC<any> = (props) => {
 				removeRepository={handleRemoveRepository}
 				inSettingsPage={true}
 			/>
-		));
+		))
 
 	const handleRemoveRepository = (repoName: string) => {
 		const newSubscribedRepositories = subscribedRepositories.filter(r => r.repoName !== repoName)

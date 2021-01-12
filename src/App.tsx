@@ -31,11 +31,11 @@ export const AuthenticationContext = React.createContext({ isAuthenticated: fals
 
 const App: React.FC<any> = props => {
 
-	const [darkMode, toggleDarkMode] = useState<boolean>(false)
+	const [darkMode, toggleDarkMode] = useState<boolean>(localStorage.getItem("theme") === "dark" ? true : false)
 	const [isAuthenticated, setAuthenticated] = useState<boolean>(false)
-    const [username, setUsername] = useState<string>("")
+	const [username, setUsername] = useState<string>("")
 
-    let history = useHistory()
+	let history = useHistory()
 
 	const theme = createMuiTheme({
 		palette: {
@@ -62,82 +62,85 @@ const App: React.FC<any> = props => {
 				},
 			},
 		},
-	});
+	})
 
 	useEffect(() => {
 		fetch("/api/v1/user/authenticated")
 			.then(res => res.json())
 			.then(({ username, accessToken }) => {
-                setAuthenticated(true)
+				setAuthenticated(true)
 				setUsername(username)
 				localStorage.setItem(ACCESS_TOKEN, accessToken)
-            })
-            .catch(err => {
-                setAuthenticated(false)
+			})
+			.catch(err => {
+				setAuthenticated(false)
 				setUsername("")
 				localStorage.removeItem(ACCESS_TOKEN)
-            })
+			})
 	}, [])
 
 	const handleLogin = () => {
-		const githubOAuth = GitHubOAuth.startGitHubOAuth("GitHubOAuth");
+		const githubOAuth = GitHubOAuth.startGitHubOAuth("GitHubOAuth")
 		githubOAuth
 			.then(({ success, code }: { success: boolean, code: string }) => {
 				if (success) performGitHubLogin(code)
 			})
 			.catch((err: any) => console.error(err))
-	};
+	}
 
 	const performGitHubLogin = (code: string) => {
 		fetch(`/api/v1/login/github/oauth2?code=${code}`)
 			.then((res) => res.json())
 			.then(({ username, accessToken }) => {
-                setAuthenticated(true)
+				setAuthenticated(true)
 				setUsername(username)
 				localStorage.setItem(ACCESS_TOKEN, accessToken)
-            })
-			.catch((err) => console.error(err));
-	};
+			})
+			.catch((err) => console.error(err))
+	}
 
 	const handleLogout = () => {
 		fetch("/api/v1/user/logout")
 			.then((res) => res.json())
 			.then(res => {
-                if (res === "Success") {
-                    setAuthenticated(false)
+				if (res === "Success") {
+					setAuthenticated(false)
 					setUsername("")
 					localStorage.removeItem(ACCESS_TOKEN)
-                }
-			});
+				}
+			})
 	}
 
 	const handleSettings = () => {
 		if (isAuthenticated)
-        	history.push("/settings")
+			history.push("/settings")
 	}
 
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-            <AuthenticationContext.Provider value={{isAuthenticated, username}}>
-                <Paper square={true} elevation={0}>
-                    <NavigationBar
-                        darkMode={darkMode}
-                        toggleDarkMode={() => toggleDarkMode((prev) => !prev)}
-                        username={username}
-                        isAuthenticated={isAuthenticated}
-                        login={handleLogin}
-                        logout={handleLogout}
-                        settings={handleSettings}
-                    />
-                    <Switch>
-                        <Route path="/settings" render={(props) => <Settings {...props} />} />
-                        <Route path="/" render={(props) => <HomePage {...props} />} />
-                    </Switch>
-                </Paper>
-            </AuthenticationContext.Provider>
+			<AuthenticationContext.Provider value={{isAuthenticated, username}}>
+				<Paper square={true} elevation={0}>
+					<NavigationBar
+						darkMode={darkMode}
+						toggleDarkMode={() => toggleDarkMode(() => {
+							localStorage.setItem("theme", !darkMode ? "dark" : "light")
+							return !darkMode
+						})}
+						username={username}
+						isAuthenticated={isAuthenticated}
+						login={handleLogin}
+						logout={handleLogout}
+						settings={handleSettings}
+					/>
+					<Switch>
+						<Route path="/settings" render={(props) => <Settings {...props} />} />
+						<Route path="/" render={(props) => <HomePage {...props} />} />
+					</Switch>
+				</Paper>
+			</AuthenticationContext.Provider>
 		</ThemeProvider>
-	);
+	)
 }
 
 export default App

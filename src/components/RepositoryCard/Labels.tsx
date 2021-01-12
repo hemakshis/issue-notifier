@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) =>
 			},
 		}),
 	})
-);
+)
 
 const Labels: React.FC<LabelsProps> = ({
 	labels,
@@ -70,21 +70,22 @@ const Labels: React.FC<LabelsProps> = ({
 	unsubscribe,
 }) => {
 
-    const [selectableLabels, setSelectableLabels] = useState<Label[]>(labels)
-    const [selectedLabelsCount, setSelectedLabelsCount] = useState<number>(0)
-    const [subscribedLabelsCount, setSubscribedLabelsCount] = useState<number>(labels.filter(l => l.subscribed).length)
-    const isSelectAll = selectedLabelsCount === selectableLabels.length - subscribedLabelsCount
-    const isSubscribedToAll = subscribedLabelsCount === labels.length
+	const [selectableLabels, setSelectableLabels] = useState<Label[]>(labels)
+	const [selectedLabelsCount, setSelectedLabelsCount] = useState<number>(0)
+	const [subscribedLabelsCount, setSubscribedLabelsCount] = useState<number>(labels.filter(l => l.subscribed).length)
+	const isSelectAll = selectedLabelsCount === selectableLabels.length - subscribedLabelsCount
+	const isSubscribedToAll = subscribedLabelsCount === labels.length
 
 	const classes = useStyles({selected: isSelectAll})
 	
 	const { isAuthenticated } = useContext(AuthenticationContext)
 
-	const handleSelection = (data: Label) => () => {
-		const index: number = selectableLabels.findIndex(l => l.name === data.name)
-		let newSelectableLabels = selectableLabels.filter(l => l.name !== data.name)
-		newSelectableLabels.splice(index, 0, { ...data, selected: !data.selected })
-		setSelectedLabelsCount(prev => prev + (data.selected ? -1 : 1))
+	const handleSelection = (index: number) => () => {
+		let newSelectableLabels = selectableLabels
+		const selectionState = newSelectableLabels[index].selected
+		newSelectableLabels[index].selected = !selectionState
+
+		setSelectedLabelsCount(prev => prev + (selectionState ? -1 : 1))
 		setSelectableLabels(newSelectableLabels)
 	}
 
@@ -112,20 +113,20 @@ const Labels: React.FC<LabelsProps> = ({
 	const subscribeToSelectedLabels = () => {
 		const selectedLabels = selectableLabels.filter(l => l.selected)
 		const selectedLabelsName = selectedLabels.map(l => l.name)
-        subscribe(selectedLabels)
-            .then(res => {
-                if (res) {
+		subscribe(selectedLabels)
+			.then(res => {
+				if (res) {
 					const newSelectableLabels = selectableLabels.map(l => ({ 
 						...l, 
 						selected: false, 
 						subscribed: l.subscribed || selectedLabelsName.includes(l.name) 
 					}))
-                    
-                    setSelectableLabels(newSelectableLabels)
-                    setSubscribedLabelsCount(prev => prev + selectedLabels.length)
+
+					setSelectableLabels(newSelectableLabels)
+					setSubscribedLabelsCount(prev => prev + selectedLabels.length)
 					setSelectedLabelsCount(0)
-                }
-            })
+				}
+			})
 	}
 
 	const unsubscribeToSelectedLabels = () => {
@@ -167,12 +168,12 @@ const Labels: React.FC<LabelsProps> = ({
 				)}
 			</Paper>}
 			<Paper component="ul" className={classes.root} elevation={0}>
-				{selectableLabels.map(l => (
+				{selectableLabels.map((l, i) => (
 					<LabelChip
 						key={l.name}
 						{...l}
 						inSettingsPage={inSettingsPage}
-						onDelete={isAuthenticated ? handleSelection(l) : undefined}
+						onDelete={isAuthenticated ? handleSelection(i) : undefined}
 					/>
 				))}
 			</Paper>
@@ -190,9 +191,7 @@ const Labels: React.FC<LabelsProps> = ({
 				</Paper>
 			)}
 		</div>
-	);
-};
+	)
+}
 
-
-
-export default Labels;
+export default Labels

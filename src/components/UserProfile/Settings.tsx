@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from "react"
 import { Redirect } from 'react-router-dom'
+import { Container, Typography } from "@material-ui/core"
 import RepositoryCard from "../RepositoryCard"
 import { Label } from "../../utils/types"
-import { Container, Typography } from "@material-ui/core"
 import { AuthenticationContext } from "../../App"
 
 export type SubscribedRepository = {

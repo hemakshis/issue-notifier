@@ -21,7 +21,6 @@ import {
 } from "@material-ui/core/styles"
 import MoreIcon from "@material-ui/icons/MoreVert"
 import GitHubIcon from "@material-ui/icons/GitHub"
-import SettingsIcon from "@material-ui/icons/Settings"
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew"
 import WbSunnyOutlinedIcon from "@material-ui/icons/WbSunnyOutlined"
 import Brightness2OutlinedIcon from '@material-ui/icons/Brightness2Outlined'
@@ -119,7 +118,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 	}
 
 	const mobileMenuId = "primary-search-account-menu-mobile"
-	const renderMobileMenu = (
+	const renderMobileMenu = () => (
 		<Menu
 			anchorEl={mobileMoreAnchorEl}
 			id={mobileMenuId}
@@ -136,31 +135,36 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 				horizontal: "center",
 			}}
 		>
-			<MenuItem>
-				<IconButton color="inherit" onClick={settings}>
-					<SettingsIcon />
-				</IconButton>
-				<p>Settings</p>
-			</MenuItem>
-			<MenuItem>
-				<IconButton color="inherit" onClick={logout}>
-					<PowerSettingsNewIcon />
-				</IconButton>
-				<p>Logout</p>
-			</MenuItem>
+			{isAuthenticated ? ([
+				<MenuItem key="mobile-subscription-menu-item">
+					<Button
+						color="inherit" 
+						startIcon={<SubscriptionsIcon />}
+						onClick={settings}
+					>
+						Subscriptions
+					</Button>
+				</MenuItem>,
+				<MenuItem key="mobile-logout-menu-item">
+					<Button
+						color="inherit" 
+						startIcon={<PowerSettingsNewIcon />}
+						onClick={logout}
+					>
+						Logout
+					</Button>
+				</MenuItem>
+			]) : (
+				<MenuItem key="mobile-github-login-menu-item">
+					{gitHubLoginButton()}
+				</MenuItem>
+			)} 
 		</Menu>
 	)
 
 	const renderNoAuthMenuItems = () => (
 		<div className={classes.sectionDesktop}>
-			<Button
-				variant="contained"
-				startIcon={<GitHubIcon />}
-				className={classes.button}
-				onClick={login}
-			>
-				Login with GitHub
-			</Button>
+			{gitHubLoginButton()}
 		</div>
 	)
 
@@ -177,6 +181,17 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 		</div>
 	)
 
+	const gitHubLoginButton = () => (
+		<Button
+			variant="contained"
+			startIcon={<GitHubIcon />}
+			className={classes.button}
+			onClick={login}
+		>
+			Login with GitHub
+		</Button>
+	)
+
 	return (
 		<div className={classes.grow}>
 			<AppBar position="static" color="transparent">
@@ -187,15 +202,11 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 						</Typography>
 					</Link>
 					<div className={classes.grow} />
-					{isAuthenticated && username && (
-						<p className={classes.username}>Hello, {username}</p>
-					)}
-					{isAuthenticated && username && (
-						<Divider className={classes.divider} orientation="vertical" />
-					)}
-					{!isAuthenticated
-						? renderNoAuthMenuItems()
-						: renderAuthMenuItems()}
+					{isAuthenticated && username && ([
+						<p key="username" className={classes.username}>Hello, {username}</p>,
+						<Divider key="divider" className={classes.divider} orientation="vertical" />
+					])}
+					{!isAuthenticated ? renderNoAuthMenuItems()	: renderAuthMenuItems()}
 					<FormGroup className={classes.themeSwitch}>
 						<FormControlLabel
 							control={
@@ -206,28 +217,23 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 									onChange={toggleDarkMode}
 								/>
 							}
-							label={
-								darkMode ? <Brightness2OutlinedIcon /> : <WbSunnyOutlinedIcon />
-							}
+							label={darkMode ? <Brightness2OutlinedIcon /> : <WbSunnyOutlinedIcon />}
 						/>
 					</FormGroup>
-
-					{isAuthenticated && (
-						<div className={classes.sectionMobile}>
-							<IconButton
-								aria-label="show more"
-								aria-controls={mobileMenuId}
-								aria-haspopup="true"
-								onClick={handleMobileMenuOpen}
-								color="inherit"
-							>
-								<MoreIcon />
-							</IconButton>
-						</div>
-					)}
+					<div className={classes.sectionMobile}>
+						<IconButton
+							aria-label="show more"
+							aria-controls={mobileMenuId}
+							aria-haspopup="true"
+							onClick={handleMobileMenuOpen}
+							color="inherit"
+						>
+							<MoreIcon />
+						</IconButton>
+					</div>
 				</Toolbar>
 			</AppBar>
-			{isAuthenticated && renderMobileMenu}
+			{renderMobileMenu()}
 		</div>
 	)
 }

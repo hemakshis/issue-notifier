@@ -65,7 +65,10 @@ const App: React.FC<any> = props => {
 	})
 
 	useEffect(() => {
-		fetch("/api/v1/user/authenticated")
+		const abortController = new AbortController()
+		const signal = abortController.signal
+
+		fetch("/api/v1/user/authenticated", { signal })
 			.then(res => res.json())
 			.then(({ username, accessToken }) => {
 				setAuthenticated(true)
@@ -77,6 +80,8 @@ const App: React.FC<any> = props => {
 				setUsername("")
 				localStorage.removeItem(ACCESS_TOKEN)
 			})
+
+		return () => { abortController.abort() }
 	}, [])
 
 	const handleLogin = () => {
@@ -90,7 +95,7 @@ const App: React.FC<any> = props => {
 
 	const performGitHubLogin = (code: string) => {
 		fetch(`/api/v1/login/github/oauth2?code=${code}`)
-			.then((res) => res.json())
+			.then(res => res.json())
 			.then(({ username, accessToken }) => {
 				setAuthenticated(true)
 				setUsername(username)

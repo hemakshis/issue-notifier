@@ -1,4 +1,5 @@
-import { ACCESS_TOKEN } from "../utils/constants"
+import { ACCESS_TOKEN } from "./constants"
+import { Label } from "./types"
 
 const GITHUB_API_URL = "https://api.github.com"
 
@@ -10,7 +11,7 @@ export const fetchRepositoriesFromGithub = (searchKey: string): Promise<any> => 
 		.then((res) => res.json())
 }
 
-export const fetchLabelsFromGithub = (repoName: string, pageNumber: number): Promise<any> => {
+export const fetchAllLabelsFromGithub = (repoName: string, pageNumber: number): Promise<any> => {
 	return fetch(`${GITHUB_API_URL}/repos/${repoName}/labels?per_page=100&page=${pageNumber}`, getOptions())
 			.then((res) => res.json())
 }

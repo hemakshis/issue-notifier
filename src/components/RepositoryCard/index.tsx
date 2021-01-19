@@ -6,7 +6,7 @@ import StarIcon from "@material-ui/icons/Star"
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline"
 import CallSplitIcon from "@material-ui/icons/CallSplit"
 import Labels from "./Labels"
-import { fetchLabelsFromGithub } from "../../utils/githubApis"
+import { fetchAllLabelsFromGithub } from "../../utils/githubApis"
 import { AuthenticationContext } from '../../App'
 
 export type RepositoryCardProps = {
@@ -122,13 +122,15 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 		if (viewLabels && isAuthenticated) {
 			fetchSubscribedLabels(fullName)
 				.then((res) => {
-					const fetchedLabelsFromGithub: Label[] = data.labels
-					if (fetchedLabelsFromGithub != null && fetchedLabelsFromGithub.length > 0) {
-						fetchedLabelsFromGithub.forEach(l  => 
-							l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
-						
-						setData((prev: any) => ({ ...prev, labels: [...fetchedLabelsFromGithub] }))
-					}	
+					if (res !== null || res !== undefined) {
+						const fetchedLabelsFromGithub: Label[] = data.labels
+						if (fetchedLabelsFromGithub != null && fetchedLabelsFromGithub.length > 0) {
+							fetchedLabelsFromGithub.forEach(l  => 
+								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
+							
+							setData((prev: any) => ({ ...prev, labels: [...fetchedLabelsFromGithub] }))
+						}	
+					}
 				})
 		}
 	}, [isAuthenticated])
@@ -143,7 +145,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 			let response: Label[] = []
 			do {
 				response = []
-				await fetchLabelsFromGithub(fullName, pageNumber)
+				await fetchAllLabelsFromGithub(fullName, pageNumber)
 						.then((res) => {
 							response = res.map((l: Label) => 
 								({ name: l.name, color: "#" + l.color, selected: false }))
@@ -157,8 +159,9 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 			if (isAuthenticated) {
 				await fetchSubscribedLabels(fullName)
 					.then((res) => {
-						allLabels.forEach(l  => 
-							l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
+						if (res !== null || res !== undefined)
+							allLabels.forEach(l  => 
+								l.subscribed = (res.filter((r: any) => r.name === l.name).length > 0))
 					})
 			}
 
@@ -247,37 +250,41 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 								{data.fullName}
 							</Link>
 						</Typography>
-						{!inSettingsPage && <Typography
-							className={classes.repositorySummary}
-							color="textPrimary"
-						>
-							<CallSplitIcon /> {data.forks}
-							<ErrorOutlineIcon style={{marginLeft: "6px"}} /> {data.openIssues}
-							<StarIcon style={{marginLeft: "6px"}} /> {data.stargazersCount}
-						</Typography>}
+						{!inSettingsPage && 
+							<Typography
+								className={classes.repositorySummary}
+								color="textPrimary"
+							>
+								<CallSplitIcon /> {data.forks}
+								<ErrorOutlineIcon style={{marginLeft: "6px"}} /> {data.openIssues}
+								<StarIcon style={{marginLeft: "6px"}} /> {data.stargazersCount}
+							</Typography>
+						}
 					</div>
 
-					{!inSettingsPage && <div className="div2">
-						<Button
-							size="small"
-							variant={viewLabels ? "outlined" : "contained"}
-							color="primary"
-							className={classes.viewLabelButton}
-							onClick={toggleAndFetchLabels}
-						>
-							{viewLabels ? "Hide Labels" : "View Labels"}
-						</Button>
-					</div>}
+					{!inSettingsPage && 
+						<div className="div2">
+							<Button
+								size="small"
+								variant={viewLabels ? "outlined" : "contained"}
+								color="primary"
+								className={classes.viewLabelButton}
+								onClick={toggleAndFetchLabels}
+							>
+								{viewLabels ? "Hide Labels" : "View Labels"}
+							</Button>
+						</div>
+					}
 				</div>
 				{loading && <CircularProgress style={{ margin: "0 50%" }} />}
-				{(inSettingsPage || viewLabels) && data.labels && (
+				{(inSettingsPage || viewLabels) && data.labels &&
 					<Labels 
 						labels={data.labels} 
 						subscribe={handleSubscribe} 
 						unsubscribe={handleUnsubscribe} 
 						inSettingsPage={inSettingsPage}
 					/>
-				)}
+				}
 			</CardContent>
 		</Card>
 	)

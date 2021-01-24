@@ -1,25 +1,15 @@
 import React from "react"
 import { BrowserRouter as Router } from "react-router-dom"
-import { render, fireEvent, screen, act } from "@testing-library/react"
+import { render, screen, act } from "@testing-library/react"
 import { rest } from "msw"
 import mswServer from "./mswServer"
 import App from "./App"
-// import GitHubOAuth from "./components/NavigationBar/GitHubOAuth"
 
 const app = (
 	<Router>
 		<App />
 	</Router>
 )
-
-jest.mock("./components/NavigationBar/GitHubOAuth", () => {
-	const startGitHubOAuth = jest.fn().mockResolvedValue({
-		success: true,
-		code: "mygithuboauthcode"
-	})
-
-	return startGitHubOAuth
-})
 
 describe('<App />', () => {
 	beforeAll(() =>	mswServer.listen())

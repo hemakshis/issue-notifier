@@ -4,13 +4,15 @@ import { Switch, Route, useHistory } from 'react-router-dom'
 import {
 	ThemeProvider,
 	createMuiTheme,
+	makeStyles,
+	createStyles
 } from "@material-ui/core/styles";
 import { Paper, CssBaseline } from "@material-ui/core"
-
-import HomePage from './components/HomePage'
-import Settings from './components/UserProfile/Settings'
-import NavigationBar from './components/NavigationBar'
-import GitHubOAuth from './components/NavigationBar/GitHubOAuth'
+import HomePage from "./components/HomePage"
+import Subscriptions from "./components/UserProfile/Subscriptions"
+import NavigationBar from "./components/NavigationBar"
+import Footer from "./components/Footer"
+import GitHubOAuth from "./components/NavigationBar/GitHubOAuth"
 import { ACCESS_TOKEN } from "./utils/constants"
 
 declare module "@material-ui/core/styles/createBreakpoints" {
@@ -29,6 +31,13 @@ export const AuthenticationContext = React.createContext({ isAuthenticated: fals
 
 // TODO: 1. give alerts for user actions, 2. store theme preference somewhere for a user 3. auto logout or alert user when session expires
 
+const useStyles = makeStyles(() => createStyles({
+		root: {
+			position: "relative",
+			minHeight: "100vh"
+		},
+}))
+
 const App: React.FC<any> = props => {
 
 	const [darkMode, toggleDarkMode] = useState<boolean>(localStorage.getItem("theme") === "dark" ? true : false)
@@ -36,6 +45,8 @@ const App: React.FC<any> = props => {
 	const [username, setUsername] = useState<string>("")
 
 	let history = useHistory()
+
+	const classes = useStyles()
 
 	const theme = createMuiTheme({
 		palette: {
@@ -61,6 +72,11 @@ const App: React.FC<any> = props => {
 					height: "36px",
 				},
 			},
+			MuiContainer:{
+				maxWidthMd: {
+					paddingBottom: "120px"
+				}
+			}
 		},
 	})
 
@@ -118,14 +134,14 @@ const App: React.FC<any> = props => {
 
 	const handleSettings = () => {
 		if (isAuthenticated)
-			history.push("/settings")
+			history.push("/subscriptions")
 	}
 
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
 			<AuthenticationContext.Provider value={{isAuthenticated, username}}>
-				<Paper square={true} elevation={0}>
+				<Paper square={true} elevation={0} className={classes.root}>
 					<NavigationBar
 						darkMode={darkMode}
 						toggleDarkMode={() => toggleDarkMode(() => {
@@ -139,9 +155,10 @@ const App: React.FC<any> = props => {
 						settings={handleSettings}
 					/>
 					<Switch>
-						<Route path="/settings" render={(props) => <Settings {...props} />} />
+						<Route path="/subscriptions" render={(props) => <Subscriptions {...props} />} />
 						<Route path="/" render={(props) => <HomePage {...props} />} />
 					</Switch>
+					<Footer />
 				</Paper>
 			</AuthenticationContext.Provider>
 		</ThemeProvider>

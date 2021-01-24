@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { Label } from '../../utils/types'
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles"
-import { Link, Card, CardContent, Button, Typography, CircularProgress } from "@material-ui/core"
+import { Badge, Link, Card, CardContent, Button, Typography, CircularProgress } from "@material-ui/core"
 import StarIcon from "@material-ui/icons/Star"
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline"
 import CallSplitIcon from "@material-ui/icons/CallSplit"
 import Labels from "./Labels"
 import { fetchAllLabelsFromGithub } from "../../utils/githubApis"
 import { AuthenticationContext } from '../../App'
+import GithubLanguageColors from '../../utils/githubLanguageColors.json'
+
+const GithubLanguageColorsMap: {[key: string]: string} = GithubLanguageColors
 
 export type RepositoryCardProps = {
 	fullName: string;
@@ -15,8 +18,9 @@ export type RepositoryCardProps = {
 	forks?: number;
 	openIssues?: number;
 	stargazersCount?: number;
+	language?: string;
 	labels?: Label[]
-	inSettingsPage: boolean;
+	inSubscriptionsPage: boolean;
 	removeRepository?: (repoName: string) => void;
 }
 
@@ -37,13 +41,32 @@ const useStyles = makeStyles((theme: Theme) =>
 			flex: "1 1 0",
 			justifyContent: "end",
 			paddingTop: 3,
-			fontSize: "0.85rem",
+			fontSize: "0.75rem",
+			fontFamily: "'Roboto Mono', monospace",
 			"& svg": {
-				marginTop: "-1px",
+				margin: "-1px 3px 0px 3px",
 				fontSize: "1.2rem",
 			},
 		},
-		viewLabelButton: ({viewLabels}: {viewLabels: boolean}) => {
+		language: ({languageColor, viewLabels}: {languageColor: string, viewLabels: boolean}) => {
+			if (languageColor !== "") {
+				return {
+					"& .MuiBadge-root": {
+						backgroundColor: theme.palette.augmentColor({ main: languageColor }).main,
+						height: "9px",
+						width: "9px",
+						borderRadius: "50%",
+						marginTop: "-2px",
+					},
+					"& span": {
+						marginLeft: "4px"
+					}
+				}
+			}
+
+			return {}
+		},
+		viewLabelButton: ({languageColor, viewLabels}: {languageColor: string, viewLabels: boolean}) => {
 			if (!viewLabels) {
 				return {
 					backgroundColor: theme.palette.augmentColor({ main: "#0d47a1" }).main,
@@ -99,8 +122,9 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 	forks,
 	openIssues,
 	stargazersCount,
+	language,
 	labels,
-	inSettingsPage,
+	inSubscriptionsPage,
 	removeRepository,
 }) => {
 	const [viewLabels, toggleViewLabels] = useState<boolean>(false)
@@ -115,8 +139,12 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 	})
 	const [isUpdate, setUpdate] = useState<boolean>(labels !== undefined ? labels.length > 0 : false)
 	const { isAuthenticated } = useContext(AuthenticationContext)
+	
+	let languageColor: string = ""
+	if (language !== undefined && GithubLanguageColorsMap[language] !== undefined)
+		languageColor = GithubLanguageColorsMap[language]
 
-	const classes = useStyles({ viewLabels })
+	const classes = useStyles({ viewLabels, languageColor })
 
 	useEffect(() => {
 		if (viewLabels && isAuthenticated) {
@@ -250,11 +278,17 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 								{data.fullName}
 							</Link>
 						</Typography>
-						{!inSettingsPage && 
+						{!inSubscriptionsPage && 
 							<Typography
 								className={classes.repositorySummary}
 								color="textPrimary"
 							>
+								{language !== undefined && languageColor !== "" && (
+									<div  className={classes.language}>
+										<Badge variant="dot" />
+										<span style={{marginRight: "6px"}}>{language}</span>
+									</div>
+								)}
 								<CallSplitIcon /> {data.forks}
 								<ErrorOutlineIcon style={{marginLeft: "6px"}} /> {data.openIssues}
 								<StarIcon style={{marginLeft: "6px"}} /> {data.stargazersCount}
@@ -262,7 +296,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 						}
 					</div>
 
-					{!inSettingsPage && 
+					{!inSubscriptionsPage && 
 						<div className="div2">
 							<Button
 								size="small"
@@ -277,12 +311,12 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 					}
 				</div>
 				{loading && <CircularProgress style={{ margin: "0 50%" }} />}
-				{(inSettingsPage || viewLabels) && data.labels &&
+				{(inSubscriptionsPage || viewLabels) && data.labels &&
 					<Labels 
 						labels={data.labels} 
 						subscribe={handleSubscribe} 
 						unsubscribe={handleUnsubscribe} 
-						inSettingsPage={inSettingsPage}
+						inSubscriptionsPage={inSubscriptionsPage}
 					/>
 				}
 			</CardContent>

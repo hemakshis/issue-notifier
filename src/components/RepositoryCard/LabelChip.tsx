@@ -7,7 +7,7 @@ import CancelIcon from '@material-ui/icons/Cancel'
 import { Label } from "../../utils/types"
 
 export type LabelChipProps = Label & { 
-	inSettingsPage?: boolean; 
+	inSubscriptionsPage?: boolean; 
 	onDelete?: (data: Label) => void; 
 }
 
@@ -50,18 +50,18 @@ const LabelChip: React.FC<LabelChipProps> = ({
 	color,
 	selected,
 	subscribed,
-	inSettingsPage,
+	inSubscriptionsPage,
 	onDelete,
 }) => {
 
-	const styleCondition = inSettingsPage ? !selected : (selected || subscribed)
+	const styleCondition = inSubscriptionsPage ? !selected : (selected || subscribed)
 	const labelStyle = useLabelStyles({ color, styleCondition })
 
 	const getChipStyle = (): LabelChipStyle => {
 		let deleteIcon
 		let variant: LabelChipStyle["variant"]
 		let size: LabelChipStyle["size"]
-		if (inSettingsPage) {
+		if (inSubscriptionsPage) {
 			if (!selected) {
 				deleteIcon = <NotificationsOffIcon />
 				variant = "default"
@@ -93,7 +93,7 @@ const LabelChip: React.FC<LabelChipProps> = ({
 	return (
 		<li key={name}>
 			{
-				!inSettingsPage && subscribed ?
+				!inSubscriptionsPage && subscribed ?
 				<Chip
 					label={name}
 					className={labelStyle.chip}

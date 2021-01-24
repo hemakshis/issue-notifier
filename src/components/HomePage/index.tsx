@@ -18,6 +18,7 @@ const HomePage: React.FC<any> = props => {
 					forks: i.forks,
 					openIssues: i.open_issues,
 					stargazersCount: i.stargazers_count,
+					language: i.language,
 				})))
 			})
 	}
@@ -31,7 +32,7 @@ const HomePage: React.FC<any> = props => {
 			<RepositoryCard
 				key={r.fullName}
 				{...r}
-				inSettingsPage={false}
+				inSubscriptionsPage={false}
 			/>
 		))
 

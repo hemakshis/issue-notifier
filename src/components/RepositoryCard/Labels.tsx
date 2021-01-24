@@ -11,7 +11,7 @@ import { AuthenticationContext } from "../../App"
 
 export type LabelsProps = {
 	labels: Label[];
-	inSettingsPage: boolean;
+	inSubscriptionsPage: boolean;
 	subscribe: (labels: Label[]) => Promise<boolean>;
 	unsubscribe: (labels: Label[], isSelectAll: boolean) => Promise<boolean>;
 }
@@ -65,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const Labels: React.FC<LabelsProps> = ({
 	labels,
-	inSettingsPage,
+	inSubscriptionsPage,
 	subscribe,
 	unsubscribe,
 }) => {
@@ -101,7 +101,7 @@ const Labels: React.FC<LabelsProps> = ({
 			handleClearSelection()
 		} else {
 			let newSelectableLabels: Label[]
-			if (inSettingsPage)
+			if (inSubscriptionsPage)
 				newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: true }))
 			else 
 				newSelectableLabels = selectableLabels.map(l => ({ ...l, selected: !l.subscribed }))
@@ -172,7 +172,7 @@ const Labels: React.FC<LabelsProps> = ({
 					<LabelChip
 						key={l.name}
 						{...l}
-						inSettingsPage={inSettingsPage}
+						inSubscriptionsPage={inSubscriptionsPage}
 						onDelete={isAuthenticated ? handleSelection(i) : undefined}
 					/>
 				))}
@@ -184,9 +184,9 @@ const Labels: React.FC<LabelsProps> = ({
 						className={classes.subscribeButton}
 						startIcon={<PlaylistAddCheckIcon />}
 						size="small"
-						onClick={inSettingsPage ? unsubscribeToSelectedLabels : subscribeToSelectedLabels}
+						onClick={inSubscriptionsPage ? unsubscribeToSelectedLabels : subscribeToSelectedLabels}
 					>
-						{inSettingsPage ? "Unsubscribe" : "Subscribe"} to {selectedLabelsCount} Labels
+						{inSubscriptionsPage ? "Unsubscribe" : "Subscribe"} to {selectedLabelsCount} Labels
 					</Button>
 				</Paper>
 			)}

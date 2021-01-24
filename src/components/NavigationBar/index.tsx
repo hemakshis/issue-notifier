@@ -156,7 +156,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 				</MenuItem>
 			]) : (
 				<MenuItem key="mobile-github-login-menu-item">
-					{gitHubLoginButton()}
+					{gitHubLoginButton("mobile-test-id")}
 				</MenuItem>
 			)} 
 		</Menu>
@@ -164,7 +164,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 
 	const renderNoAuthMenuItems = () => (
 		<div className={classes.sectionDesktop}>
-			{gitHubLoginButton()}
+			{gitHubLoginButton("desktop-test-id")}
 		</div>
 	)
 
@@ -181,12 +181,13 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 		</div>
 	)
 
-	const gitHubLoginButton = () => (
+	const gitHubLoginButton = (testId: string) => (
 		<Button
 			variant="contained"
 			startIcon={<GitHubIcon />}
 			className={classes.button}
 			onClick={login}
+			data-testid={testId}
 		>
 			Login with GitHub
 		</Button>

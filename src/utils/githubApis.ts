@@ -1,5 +1,4 @@
 import { ACCESS_TOKEN } from "./constants"
-import { Label } from "./types"
 
 const GITHUB_API_URL = "https://api.github.com"
 

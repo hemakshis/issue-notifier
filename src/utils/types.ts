@@ -11,5 +11,6 @@ export type Repository = {
 	forks: number;
 	openIssues: number;
 	stargazersCount: number;
-	labels: Label[]
+	language: string;
+	labels: Label[];
 }

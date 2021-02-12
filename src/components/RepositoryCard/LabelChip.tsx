@@ -30,6 +30,11 @@ const useLabelStyles = makeStyles((theme: Theme) => ({
 			color: !styleCondition
 				? theme.palette.type !== "dark" ? theme.palette.grey[900] : "#fff"
 				: theme.palette.getContrastText(theme.palette.augmentColor({ main: color })[theme.palette.type]),
+			fontSize: "0.75rem",
+			"& .MuiChip-label": {
+				paddingRight: "8px",
+				paddingLeft: "8px",
+			},
 		}
 
 		return {

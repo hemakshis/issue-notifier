@@ -28,7 +28,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 	},
 	footerLinkListItem: {
 		width: "24px",
-		margin: "0px 16px"
+		margin: "0px 16px",
+		"& .MuiListItemIcon-root": {
+			color: theme.palette.type === "dark" ? "#fff" : theme.palette.grey[900],
+		},
 	}
 }))
 
@@ -60,32 +63,29 @@ const FOOTER_LINKS = [{
 }]
 
 const Footer: React.FC<any> = props => {
-
 	const classes = useStyles()
-
-
 
 	return (
 		<Container className={classes.root}>
 			<div className={classes.content}>
 				<span>&#9400; 2021, Hemakshi Sachdev</span>
 				<List className={classes.footerLinksList}>
-					{FOOTER_LINKS.map(fl =>(
-					<ListItem
-						key={fl.name} 
-						button 
-						component="a" 
-						href={fl.link} 
-						className={classes.footerLinkListItem} 
-						disableGutters 
-						target="_blank"
-					>
-						<Tooltip title={fl.tooltip}>
-							<ListItemIcon>
-								{fl.icon}
-							</ListItemIcon>
-						</Tooltip>
-					</ListItem>
+					{FOOTER_LINKS.map(fl => (
+						<ListItem
+							key={fl.name} 
+							button 
+							component="a" 
+							href={fl.link} 
+							className={classes.footerLinkListItem} 
+							disableGutters 
+							target="_blank"
+						>
+							<Tooltip title={fl.tooltip}>
+								<ListItemIcon>
+									{fl.icon}
+								</ListItemIcon>
+							</Tooltip>
+						</ListItem>
 					))}
 				</List>
 			</div>

@@ -42,7 +42,6 @@ const useStyles = makeStyles((theme: Theme) =>
 			justifyContent: "end",
 			paddingTop: 3,
 			fontSize: "0.75rem",
-			fontFamily: "'Roboto Mono', monospace",
 			"& svg": {
 				margin: "-1px 3px 0px 3px",
 				fontSize: "1.2rem",
@@ -105,8 +104,12 @@ const useStyles = makeStyles((theme: Theme) =>
 		},
 		summary: {
 			display: "flex",
+			flexWrap: "wrap",
 			"& .div1": {
 				flex: "80%",
+				"& h5": {
+					fontSize: "1rem",
+				},
 			},
 			"& .div2": {
 				flex: "20%",
@@ -273,7 +276,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({
 			<CardContent className={classes.cardContent}>
 				<div className={classes.summary}>
 					<div className="div1">
-						<Typography variant="h5" component="h2" style={{fontFamily: "'Roboto Mono', monospace"}}>
+						<Typography variant="h5" component="h5">
 							<Link href={data.htmlUrl} target="_blank" rel="noopener" style={{ color: "#03a9f4" }}>
 								{data.fullName}
 							</Link>

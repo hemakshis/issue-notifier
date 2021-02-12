@@ -155,8 +155,8 @@ const App: React.FC<any> = props => {
 						settings={handleSettings}
 					/>
 					<Switch>
-						<Route path="/subscriptions" render={(props) => <Subscriptions {...props} />} />
-						<Route path="/" render={(props) => <HomePage {...props} />} />
+						<Route exact path="/subscriptions" render={(props) => <Subscriptions {...props} />} />
+						<Route exact path="/" render={(props) => <HomePage {...props} />} />
 					</Switch>
 					<Footer />
 				</Paper>

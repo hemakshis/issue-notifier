@@ -36,7 +36,6 @@ const useStyles = makeStyles((theme: Theme) =>
 			justifyContent: "flex-end",
 			"& button": {
 				margin: theme.spacing(1),
-				fontFamily: "Roboto Mono, monospace",
 				textTransform: "capitalize",
 			},
 		},

@@ -47,7 +47,6 @@ const useStyles = makeStyles((theme: Theme) => {
 			[theme.breakpoints.up("sm")]: {
 				display: "block",
 			},
-			fontFamily: "Roboto Mono, monospace",
 			marginRight: theme.spacing(1),
 		},
 		themeSwitch: {
@@ -175,9 +174,11 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 					<SubscriptionsIcon />
 				</IconButton>
 			</Tooltip>
-			<IconButton color="inherit" style={{ marginLeft: "-5px" }} onClick={logout}>
-				<PowerSettingsNewIcon />
-			</IconButton>
+			<Tooltip title="Logout">
+				<IconButton color="inherit" style={{ marginLeft: "-5px" }} onClick={logout}>
+					<PowerSettingsNewIcon />
+				</IconButton>
+			</Tooltip>
 		</div>
 	)
 

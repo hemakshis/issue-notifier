@@ -43,8 +43,10 @@ class GitHubOAuth {
 		const left = window.innerWidth / 2 - width / 2
 		const top = window.innerHeight / 2 - height / 2
 
+		const callbackUrl = process.env.NODE_ENV === "production" ? process.env.REACT_APP_ISSUE_NOTIFIER_API_ENDPOINT : "http://localhost:3000"
+		console.log(callbackUrl)
 		const url =
-			"https://github.com/login/oauth/authorize?scope=read:user,user:email&client_id=69c3fc731ccb2d116412&redirect_uri=http://localhost:3000"
+			`https://github.com/login/oauth/authorize?scope=read:user,user:email&client_id=69c3fc731ccb2d116412&redirect_uri=${callbackUrl}`
 
 		this.popupWindow = window.open(
 			url,
